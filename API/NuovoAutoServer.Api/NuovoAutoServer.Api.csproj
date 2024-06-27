@@ -14,6 +14,12 @@
     <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="1.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\NuovoAutoServer.Model\NuovoAutoServer.Model.csproj" />
+    <ProjectReference Include="..\NuovoAutoServer.Repository\NuovoAutoServer.Repository.csproj" />
+    <ProjectReference Include="..\NuovoAutoServer.Services\NuovoAutoServer.Services.csproj" />
+    <ProjectReference Include="..\NuovoAutoServer.Shared\NuovoAutoServer.Shared.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <None Update="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

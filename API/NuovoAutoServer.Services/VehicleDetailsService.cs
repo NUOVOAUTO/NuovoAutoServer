@@ -1,6 +1,9 @@
 ﻿using Azure;
 
+using Microsoft.ApplicationInsights;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Abstractions;
 
 using NuovoAutoServer.Model;
 using NuovoAutoServer.Repository.DBContext;
@@ -21,37 +24,20 @@ namespace NuovoAutoServer.Services
     {
         private readonly IGenericRepository<CosmosDBContext> _repo;
         private readonly IVehicleDetailsApiProvider _vehicleDetailsApiProvider;
+        private readonly TelemetryClient _telemetryClient;
+        private readonly ILogger _logger;
 
         private bool IsExpired(DateTime dt)
         {
             return dt.AddSeconds(300) <= DateTime.Now;
         }
 
-        public VehicleDetailsService(IGenericRepository<CosmosDBContext> repository, IVehicleDetailsApiProvider vehicleDetailsApiProvider)
+        public VehicleDetailsService(IGenericRepository<CosmosDBContext> repository, IVehicleDetailsApiProvider vehicleDetailsApiProvider, TelemetryClient telemetryClient, ILoggerFactory loggerFactory)
         {
             _repo = repository;
             _vehicleDetailsApiProvider = vehicleDetailsApiProvider;
-        }
-
-        public async Task<VehicleDetails> GetByTagNumber2(string tagNumber, string state)
-        {
-            var query = _repo.Get<VehicleDetails>();
-            query = query.Where(x => x.PartitionKey.StartsWith(tagNumber) && x.State == state);
-            var res = await query.Select(x => x).FirstOrDefaultAsync();
-            var isExpired = res != null ? !IsExpired(res.LastUpdatedDateTime) : true;
-            if (isExpired || res == null)
-            {
-                var resultFromApi = await _vehicleDetailsApiProvider.GetByTagNumber(tagNumber, state);
-                if (res != null)
-                {
-                    resultFromApi.Id = res.Id;
-
-                    res = await _repo.UpdateAsync(resultFromApi);
-                }
-                else
-                    res = await _repo.AddAsync(resultFromApi);
-            }
-            return res;
+            _telemetryClient = telemetryClient;
+            _logger = loggerFactory.CreateLogger<VehicleDetailsService>();
         }
 
         public async Task<VehicleDetails> GetByTagNumber(string tagNumber, string state)
@@ -63,15 +49,19 @@ namespace NuovoAutoServer.Services
 
             // Check if the vehicle details are expired
             bool isExpired = vehicleDetails != null && IsExpired(vehicleDetails.LastUpdatedDateTime);
+            _logger.LogInformation("Vehicle details expired: {IsExpired}", isExpired);
 
             // If the vehicle details are expired or not found, get fresh details from API
             if (isExpired || vehicleDetails == null)
             {
+                _logger.LogInformation("Fetching fresh details from API for tag number: {0} and state: {1}", tagNumber, state);
                 var freshDetails = await _vehicleDetailsApiProvider.GetByTagNumber(tagNumber, state);
               
                 if (freshDetails == null)
                 {
-                    throw new Exception("Not able to fetch details");
+                    string message = String.Format("Not able to fetch details from API for tag number: {0} and state: {1}", tagNumber, state);
+                    _logger.LogWarning(message);
+                    throw new Exception(message);
                 }
 
                 var vinDetails = await _repo.Get<VehicleDetails>()
@@ -84,32 +74,14 @@ namespace NuovoAutoServer.Services
                 }
 
                 VehicleDetails? freshVinDetails = null;
+                _logger.LogInformation("Fetching fresh VIN details for VIN: {Vin}", freshDetails.Vin);
                 freshVinDetails = await _vehicleDetailsApiProvider.GetByVinNumber(freshDetails.Vin, freshDetails.LicenseNumber);
                 freshVinDetails.LicenseNumber = freshDetails.LicenseNumber;
                 freshVinDetails.State = freshDetails.State;
                 vehicleDetails = await AddOrUpdateVehicleDetailsAsync(null, freshVinDetails);
-                
-                //if (vinDetails == null)
-                //{
-              
-                //}
-                //else
-                //{
-                //    vinDetails.LicenseNumber = freshDetails.LicenseNumber;
-                //    vinDetails.State = freshDetails.State;
-
-                //    await this._repo.RemoveAsync(vinDetails);
-
-                //    vehicleDetails = await AddOrUpdateVehicleDetailsAsync(vinDetails, vinDetails);
-                //}
-
-                //vehicleDetails= await AddOrUpdateVehicleDetailsAsync(vinDetails, freshVinDetails);
-                //freshDetails = await _vehicleDetailsApiProvider.GetByVinNumber(freshDetails.Vin);
-
-                // If vehicle details already exist in the repository, update it
-                //vehicleDetails = await AddOrUpdateVehicleDetailsAsync(vehicleDetails, freshDetails);
             }
-
+            
+            _logger.LogInformation("Completed GetByTagNumber for tag number: {TagNumber} and state: {State}", tagNumber, state);
             return vehicleDetails;
         }
 
@@ -153,11 +125,6 @@ namespace NuovoAutoServer.Services
             }
 
             return vehicleDetails;
-        }
-
-        public async Task<VehicleDetails> UpsertVehicleDetails(VehicleDetails vehicleDetails)
-        {
-            return null;
         }
     }
 

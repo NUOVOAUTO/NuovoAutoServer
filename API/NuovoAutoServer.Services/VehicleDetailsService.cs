@@ -56,19 +56,19 @@ namespace NuovoAutoServer.Services
             {
                 _logger.LogInformation("Fetching fresh details from API for tag number: {0} and state: {1}", tagNumber, state);
                 var freshDetails = await _vehicleDetailsApiProvider.GetByTagNumber(tagNumber, state);
-              
+
                 if (freshDetails == null)
                 {
                     string message = String.Format("Not able to fetch details from API for tag number: {0} and state: {1}", tagNumber, state);
                     _logger.LogWarning(message);
-                    throw new Exception(message);
+                    throw new Exception("Invalid Tagnumber or State");
                 }
 
                 var vinDetails = await _repo.Get<VehicleDetails>()
                                           .Where(x => x.PartitionKey.Contains(freshDetails.Vin) && x.Vin == freshDetails.Vin)
                                           .FirstOrDefaultAsync();
 
-                if(vinDetails != null)
+                if (vinDetails != null)
                 {
                     await this._repo.RemoveAsync(vinDetails);
                 }
@@ -80,8 +80,7 @@ namespace NuovoAutoServer.Services
                 freshVinDetails.State = freshDetails.State;
                 vehicleDetails = await AddOrUpdateVehicleDetailsAsync(null, freshVinDetails);
             }
-            
-            _logger.LogInformation("Completed GetByTagNumber for tag number: {TagNumber} and state: {State}", tagNumber, state);
+
             return vehicleDetails;
         }
 
@@ -93,15 +92,19 @@ namespace NuovoAutoServer.Services
 
             // Check if the vehicle details are expired
             bool isExpired = vehicleDetails != null && IsExpired(vehicleDetails.LastUpdatedDateTime);
+            _logger.LogInformation("Vehicle details expired: {IsExpired}", isExpired);
 
             // If the vehicle details are expired or not found, get fresh details from API
             if (isExpired || vehicleDetails == null || vehicleDetails?.IsVinDetailsFetched == false)
             {
-                var freshDetails = await _vehicleDetailsApiProvider.GetByVinNumber(vinNumber);
+                _logger.LogInformation("Fetching fresh details from API for VIN: {0}", vinNumber);
+               var freshDetails = await _vehicleDetailsApiProvider.GetByVinNumber(vinNumber);
 
                 if (freshDetails == null)
                 {
-                    throw new Exception("Not able to fetch details");
+                    string message = String.Format("Not able to fetch details from API for VIN: {0}", vinNumber);
+                    _logger.LogWarning(message);
+                    throw new Exception("Invalid VIN number");
                 }
 
                 // If vehicle details already exist in the repository, update it

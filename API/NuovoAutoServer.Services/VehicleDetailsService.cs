@@ -28,11 +28,11 @@ namespace NuovoAutoServer.Services
         private readonly IVehicleDetailsApiProvider _vehicleDetailsApiProvider;
         private readonly TelemetryClient _telemetryClient;
         private readonly ILogger _logger;
-        private readonly AppSettings _apiSettings;
+        private readonly AppSettings _appSettings;
 
         private bool IsExpired(DateTime dt)
         {
-            return dt.AddHours(_apiSettings.CacheExpirationTimeInHours) <= DateTime.Now;
+            return dt.AddHours(_appSettings.CacheExpirationTimeInHours) <= DateTime.Now;
         }
 
         public VehicleDetailsService(IGenericRepository<CosmosDBContext> repository, IVehicleDetailsApiProvider vehicleDetailsApiProvider, TelemetryClient telemetryClient, ILoggerFactory loggerFactory, IOptions<AppSettings> appSettings)
@@ -41,7 +41,7 @@ namespace NuovoAutoServer.Services
             _vehicleDetailsApiProvider = vehicleDetailsApiProvider;
             _telemetryClient = telemetryClient;
             _logger = loggerFactory.CreateLogger<VehicleDetailsService>();
-            _apiSettings = appSettings.Value;
+            _appSettings = appSettings.Value;
         }
 
         public async Task<VehicleDetails> GetByTagNumber(string tagNumber, string state)
@@ -127,7 +127,7 @@ namespace NuovoAutoServer.Services
             }
             else // If vehicle details do not exist in the repository, add new details
             {
-                freshDetails.Id = Guid.NewGuid();
+                freshDetails.Id = Guid.NewGuid().ToString();
                 vehicleDetails = await _repo.AddAsync(freshDetails);
             }
 

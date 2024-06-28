@@ -21,7 +21,7 @@ namespace NuovoAutoServer.Model
             BasicDetails = data ?? new JObject();
             SetPartitionKey();
         }
-        public Guid Id { get; set; }
+        public string Id { get; set; }
 
         public string LicenseNumber { get; set; }
         public string Vin { get; set; }

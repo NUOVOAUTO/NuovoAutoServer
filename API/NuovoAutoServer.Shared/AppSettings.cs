@@ -7,6 +7,7 @@
         public ApiProvider VehicleDatabasesApiProvider { get; set; }
         public bool LogDbDiagnosticts { get; set; }
         public int CacheExpirationTimeInHours { get; set; }
+        public RateLimiting RateLimiting { get; set; }
     }
 
     public interface IAppSettings
@@ -31,6 +32,13 @@
     {
         public string BaseUrl { get; set; }
         public string AuthKey { get; set; }
+    }
+
+    public class RateLimiting
+    {
+        public string WhitelistedIPs { get; set; }
+        public int RequestsLimit { get; set; }
+        public int WindowDurationInHours { get; set; }
     }
 
 

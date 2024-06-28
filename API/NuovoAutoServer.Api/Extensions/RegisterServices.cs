@@ -26,6 +26,7 @@ namespace NuovoAutoServer.Api.Extensions
             services.RegisterRepositories();
 
             services.AddTransient<VehicleDetailsService>();
+            services.AddSingleton<SecurityService>();
             services.AddTransient<IVehicleDetailsApiProvider, VehicleDatabaseApiProvider>();
 
             using (var scope = serviceProvider.CreateScope())

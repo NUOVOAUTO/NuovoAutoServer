@@ -8,8 +8,10 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
+using NuovoAutoServer.Api.Extensions;
 using NuovoAutoServer.Model;
 using NuovoAutoServer.Services;
+using NuovoAutoServer.Shared.CustomExceptions;
 
 namespace NuovoAutoServer.Api
 {
@@ -18,10 +20,13 @@ namespace NuovoAutoServer.Api
         private readonly ILogger _logger;
 
         private readonly VehicleDetailsService _vehicleDetailsService;
-        public VehicleDetailsFunction(ILoggerFactory loggerFactory, VehicleDetailsService vehicleDetialsService)
+        private readonly SecurityService _securityService; // Added SecurityService
+
+        public VehicleDetailsFunction(ILoggerFactory loggerFactory, VehicleDetailsService vehicleDetialsService, SecurityService securityService) // Injected SecurityService
         {
             _logger = loggerFactory.CreateLogger<VehicleDetailsFunction>();
             _vehicleDetailsService = vehicleDetialsService;
+            _securityService = securityService; // Assigned injected SecurityService
         }
 
         [Function("Function1")]
@@ -37,25 +42,43 @@ namespace NuovoAutoServer.Api
 
         [Function("GetByTagNumber")]
         public async Task<HttpResponseData> GetByTagNumber([HttpTrigger(AuthorizationLevel.Function, "get",
-Route = "VehicleDetails/searchByTagNumber/{tag}/{state}")] HttpRequestData req, string tag, string state,
+    Route = "VehicleDetails/searchByTagNumber/{tag}/{state}")] HttpRequestData req, string tag, string state,
 FunctionContext executionContext)
         {
             try
             {
-            _logger.LogInformation("C# HTTP trigger function processed a request.");
+                _securityService.ValidateClientIp(req);
 
-            var vd = await _vehicleDetailsService.GetByTagNumber(tag, state);
+                _logger.LogInformation("C# HTTP trigger function processed a request.");
 
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            response.Headers.Add("Content-Type", "application/json; charset=utf-8");
+                var vd = await _vehicleDetailsService.GetByTagNumber(tag, state);
 
-            var json = JsonConvert.SerializeObject(vd);
-            await response.WriteStringAsync(json);
-            return response;
+                var response = req.CreateResponse(HttpStatusCode.OK);
+                response.Headers.Add("Content-Type", "application/json; charset=utf-8");
+
+                var json = JsonConvert.SerializeObject(vd);
+                await response.WriteStringAsync(json);
+                return response;
+            }
+            catch (IPNotFoundException ex)
+            {
+                var response = req.CreateResponse(HttpStatusCode.Forbidden);
+                _logger.LogError(ex.Message);
+                response.Headers.Add("Content-Type", "application/json; charset=utf-8");
+                await response.WriteStringAsync("Invalid IP Address");
+                return response;
+            }
+            catch (RateLimitExceededException ex)
+            {
+                var response = req.CreateResponse(HttpStatusCode.TooManyRequests);
+                _logger.LogError(ex.Message);
+                response.Headers.Add("Content-Type", "application/json; charset=utf-8");
+                await response.WriteStringAsync(ex.Message);
+                return response;
             }
             catch (Exception ex)
             {
-                var response = req.CreateResponse(HttpStatusCode.OK);
+                var response = req.CreateResponse(HttpStatusCode.BadRequest);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
                 await response.WriteStringAsync(ex.Message);
                 return response;
@@ -64,11 +87,13 @@ FunctionContext executionContext)
 
         [Function("GetByVinNumber")]
         public async Task<HttpResponseData> GetByVinNumber([HttpTrigger(AuthorizationLevel.Function, "get",
-Route = "VehicleDetails/searchByVinNumber/{vin}")] HttpRequestData req, string vin,
+    Route = "VehicleDetails/searchByVinNumber/{vin}")] HttpRequestData req, string vin,
 FunctionContext executionContext)
         {
             try
             {
+                _securityService.ValidateClientIp(req);
+
                 _logger.LogInformation("C# HTTP trigger function processed a request.");
 
                 var vd = await _vehicleDetailsService.GetByVinNumber(vin);
@@ -80,9 +105,25 @@ FunctionContext executionContext)
                 await response.WriteStringAsync(json);
                 return response;
             }
+            catch(IPNotFoundException ex)
+            {
+                var response = req.CreateResponse(HttpStatusCode.Forbidden);
+                _logger.LogError(ex.Message);
+                response.Headers.Add("Content-Type", "application/json; charset=utf-8");
+                await response.WriteStringAsync("Invalid IP Address");
+                return response;
+            }
+            catch (RateLimitExceededException ex)
+            {
+                var response = req.CreateResponse(HttpStatusCode.TooManyRequests);
+                _logger.LogError(ex.Message);
+                response.Headers.Add("Content-Type", "application/json; charset=utf-8");
+                await response.WriteStringAsync(ex.Message);
+                return response;
+            }
             catch (Exception ex)
             {
-                var response = req.CreateResponse(HttpStatusCode.OK);
+                var response = req.CreateResponse(HttpStatusCode.BadRequest);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
                 await response.WriteStringAsync(ex.Message);
                 return response;

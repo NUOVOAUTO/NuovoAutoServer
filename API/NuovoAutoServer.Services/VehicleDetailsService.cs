@@ -3,12 +3,14 @@
 using Microsoft.ApplicationInsights;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Abstractions;
 
 using NuovoAutoServer.Model;
 using NuovoAutoServer.Repository.DBContext;
 using NuovoAutoServer.Repository.Repository;
 using NuovoAutoServer.Services.API_Provider;
+using NuovoAutoServer.Shared;
 
 using System;
 using System.Collections.Generic;
@@ -26,18 +28,20 @@ namespace NuovoAutoServer.Services
         private readonly IVehicleDetailsApiProvider _vehicleDetailsApiProvider;
         private readonly TelemetryClient _telemetryClient;
         private readonly ILogger _logger;
+        private readonly AppSettings _apiSettings;
 
         private bool IsExpired(DateTime dt)
         {
-            return dt.AddSeconds(300) <= DateTime.Now;
+            return dt.AddHours(_apiSettings.CacheExpirationTimeInHours) <= DateTime.Now;
         }
 
-        public VehicleDetailsService(IGenericRepository<CosmosDBContext> repository, IVehicleDetailsApiProvider vehicleDetailsApiProvider, TelemetryClient telemetryClient, ILoggerFactory loggerFactory)
+        public VehicleDetailsService(IGenericRepository<CosmosDBContext> repository, IVehicleDetailsApiProvider vehicleDetailsApiProvider, TelemetryClient telemetryClient, ILoggerFactory loggerFactory, IOptions<AppSettings> appSettings)
         {
             _repo = repository;
             _vehicleDetailsApiProvider = vehicleDetailsApiProvider;
             _telemetryClient = telemetryClient;
             _logger = loggerFactory.CreateLogger<VehicleDetailsService>();
+            _apiSettings = appSettings.Value;
         }
 
         public async Task<VehicleDetails> GetByTagNumber(string tagNumber, string state)
@@ -98,7 +102,7 @@ namespace NuovoAutoServer.Services
             if (isExpired || vehicleDetails == null || vehicleDetails?.IsVinDetailsFetched == false)
             {
                 _logger.LogInformation("Fetching fresh details from API for VIN: {0}", vinNumber);
-               var freshDetails = await _vehicleDetailsApiProvider.GetByVinNumber(vinNumber);
+                var freshDetails = await _vehicleDetailsApiProvider.GetByVinNumber(vinNumber);
 
                 if (freshDetails == null)
                 {

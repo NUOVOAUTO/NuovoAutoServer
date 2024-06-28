@@ -6,6 +6,7 @@
         public ConnectionStrings ConnectionStrings { get; set; }
         public ApiProvider VehicleDatabasesApiProvider { get; set; }
         public bool LogDbDiagnosticts { get; set; }
+        public int CacheExpirationTimeInHours { get; set; }
     }
 
     public interface IAppSettings
@@ -22,8 +23,8 @@
 
     public class CosmosDbConnection
     {
-        public string Name { get; set;}
-        public string DbName { get; set;}
+        public string Name { get; set; }
+        public string DbName { get; set; }
     }
 
     public class ApiProvider

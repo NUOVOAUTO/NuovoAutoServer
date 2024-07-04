@@ -67,15 +67,23 @@ namespace NuovoAutoServer.Repository.DBContext
             #region NoDiscriminator
             modelBuilder.Entity<VehicleDetails>()
                 .HasDiscriminator();
+
+            modelBuilder.Entity<VehicleEnquiry>()
+               .HasDiscriminator();
             #endregion
 
             #region PartitionKey
             modelBuilder.Entity<VehicleDetails>()
                 .HasPartitionKey(o => o.PartitionKey);
+
+            modelBuilder.Entity<VehicleEnquiry>()
+                .HasPartitionKey(o => o.PartitionKey);
             #endregion
 
             #region ETag
             modelBuilder.Entity<VehicleDetails>()
+                .UseETagConcurrency();
+            modelBuilder.Entity<VehicleEnquiry>()
                 .UseETagConcurrency();
             #endregion
 
@@ -86,6 +94,14 @@ namespace NuovoAutoServer.Repository.DBContext
             v => JsonConvert.SerializeObject(v),
             v => JObject.Parse(v));
 
+
+            modelBuilder.Entity<VehicleEnquiry>().OwnsOne(
+                o => o.VehicleEnquiryDetails,
+                sa =>
+                {
+                    sa.ToJsonProperty("Details");
+                }
+                );
 
             //modelBuilder.Entity<Order>().OwnsOne(
             //    o => o.ShippingAddress,

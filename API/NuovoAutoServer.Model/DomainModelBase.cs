@@ -15,7 +15,7 @@ namespace NuovoAutoServer.Model
         public Guid CreateUserId { get; set; }
         public Guid LastUpdatedUserId{ get; set; }
 
-        public string PartitionKey { get; set; }
+        public virtual string PartitionKey { get; set; }
 
         public string RecordStatus { get; set; } = RecordStatusConstants.Active;
 
@@ -57,6 +57,6 @@ namespace NuovoAutoServer.Model
             LastUpdatedUserId = Guid.Empty;
         }
 
-        public abstract void SetPartitionKey();
+        public abstract string SetPartitionKey();
     }
 }

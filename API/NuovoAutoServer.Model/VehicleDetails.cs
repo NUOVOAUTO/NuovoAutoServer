@@ -31,9 +31,9 @@ namespace NuovoAutoServer.Model
         public JObject BasicDetails { get; set; }
         public bool? IsVinDetailsFetched { get; set; }
 
-        public override void SetPartitionKey()
+        public override string SetPartitionKey()
         {
-            PartitionKey = $"{LicenseNumber}-{Vin}";
+            return PartitionKey = $"{LicenseNumber}-{Vin}";
         }
 
         public VehicleDetails SetEntity(VehicleDetails source)
@@ -50,4 +50,6 @@ namespace NuovoAutoServer.Model
             return this;
         }
     }
+
+ 
 }

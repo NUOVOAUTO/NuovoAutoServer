@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuovoAutoServer.Tests", "Un
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuovoAutoServer.Shared", "API\NuovoAutoServer.Shared\NuovoAutoServer.Shared.csproj", "{B3547B79-ADFC-4568-8B50-ADC937D2EC72}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuovoAutoServer.VehicleDatabasesApiProvider", "NuovoAutoServer.VehicleDatabasesApiProvider\NuovoAutoServer.VehicleDatabasesApiProvider.csproj", "{EB09AFBF-2090-4012-BEF4-7EADFDE2D35B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuovoAutoServer.VehicleDatabasesApiProvider", "NuovoAutoServer.VehicleDatabasesApiProvider\NuovoAutoServer.VehicleDatabasesApiProvider.csproj", "{EB09AFBF-2090-4012-BEF4-7EADFDE2D35B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -74,9 +74,11 @@ namespace NuovoAutoServer.Repository.Repository
             return item;
         }
 
-        public Task<IEnumerable<TEntity>> AddRangeAsync<TEntity>(IEnumerable<TEntity> items) where TEntity : class
+        public async Task<IEnumerable<TEntity>> AddRangeAsync<TEntity>(IEnumerable<TEntity> items) where TEntity : class
         {
-            throw new NotImplementedException();
+            await context.Set<TEntity>().AddRangeAsync(items);
+            await context.SaveChangesAsync();
+            return items;
         }
 
         public async Task<TEntity> UpdateAsync<TEntity>(TEntity item) where TEntity : class

@@ -21,7 +21,26 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\API\NuovoAutoServer.Api\NuovoAutoServer.Api.csproj" />
+    <ProjectReference Include="..\..\API\NuovoAutoServer.Model\NuovoAutoServer.Model.csproj" />
+    <ProjectReference Include="..\..\API\NuovoAutoServer.Repository\NuovoAutoServer.Repository.csproj" />
+    <ProjectReference Include="..\..\API\NuovoAutoServer.Services\NuovoAutoServer.Services.csproj" />
+    <ProjectReference Include="..\..\API\NuovoAutoServer.Shared\NuovoAutoServer.Shared.csproj" />
+    <ProjectReference Include="..\..\NuovoAutoServer.VehicleDatabasesApiProvider\NuovoAutoServer.VehicleDatabasesApiProvider.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="local.settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+    <None Update="MockData\vehicleEnquiry.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

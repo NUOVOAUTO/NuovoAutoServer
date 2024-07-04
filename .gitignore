@@ -396,3 +396,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+/UnitTest/NuovoAutoServer.Tests/local.settings.json
+/API/NuovoAutoServer.Api/Properties/ServiceDependencies/NuovoAutoServerApiDev - Web Deploy
+/API/NuovoAutoServer.Api/Properties/serviceDependencies.NuovoAutoServerApiDev - Web Deploy.json

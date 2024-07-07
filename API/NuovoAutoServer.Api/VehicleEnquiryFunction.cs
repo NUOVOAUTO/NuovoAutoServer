@@ -1,6 +1,7 @@
 
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
@@ -37,6 +38,17 @@ namespace NuovoAutoServer.Api
                 await response.WriteAsJsonAsync(vehicleEnquiry);
                 return response;
             }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                var response = req.CreateResponse(HttpStatusCode.BadRequest);
+                if (ex.InnerException is Microsoft.Azure.Cosmos.CosmosException cosmosEx)
+                    await response.WriteStringAsync(cosmosEx.ResponseBody);
+                else
+                    await response.WriteStringAsync(ex.InnerException?.Message ?? ex.Message);
+
+                return response;
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
@@ -51,8 +63,8 @@ namespace NuovoAutoServer.Api
         {
             try
             {
-                int start = int.Parse(req.Query["start"]?? "0");
-                int end = int.Parse(req.Query["end"]?? "25");
+                int start = int.Parse(req.Query["start"] ?? "0");
+                int end = int.Parse(req.Query["end"] ?? "25");
                 bool fetchAll = bool.Parse(req.Query["all"] ?? false.ToString());
 
                 int pageSize = 20;

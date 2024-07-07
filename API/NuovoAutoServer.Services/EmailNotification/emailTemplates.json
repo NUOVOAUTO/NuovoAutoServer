@@ -1,0 +1,16 @@
+{
+  "EmailSettings": {
+    "Sender": "dev.nuovoauto@outlook.com",
+    "Templates": {
+      "VehicleEnquiry": {
+        "Subject": "WebuyCarz - Enquiry Submitted - {VinNumber}",
+        "Body": "Thank you for submitting the request to webuycarz for the below car Make:{Make}, Model:{Model}, Year: {Year}, Vin: {VinNumber}, State:{State}, Zipcode: {Zipcode}",
+        "Recipients": {
+          "To": [],
+          "CC": [],
+          "BCC": []
+        }
+      }
+    }
+  }
+}

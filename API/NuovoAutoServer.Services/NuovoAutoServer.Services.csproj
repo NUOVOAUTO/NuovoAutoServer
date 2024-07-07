@@ -17,4 +17,10 @@
     <ProjectReference Include="..\NuovoAutoServer.Shared\NuovoAutoServer.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="EmailNotification\emailTemplates.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

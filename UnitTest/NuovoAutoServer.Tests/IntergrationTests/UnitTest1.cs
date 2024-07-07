@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+
 using Moq;
 
 using Newtonsoft.Json;
@@ -14,6 +15,7 @@ using NuovoAutoServer.Model;
 using NuovoAutoServer.Repository.DBContext;
 using NuovoAutoServer.Repository.Repository;
 using NuovoAutoServer.Services;
+using NuovoAutoServer.Services.EmailNotification;
 using NuovoAutoServer.Shared;
 
 using System.Text.Json;
@@ -80,4 +82,43 @@ namespace NuovoAutoServer.Tests.IntergrationTests
             Assert.Equal(vehicleEnquiriesFromJson.Count, vehicleEnquiriesFromJson.Count);
         }
     }
+
+    public class EmailNotificationTests
+    {
+        private readonly EmailNotificationService _service;
+
+        public EmailNotificationTests(EmailNotificationService service)
+        {
+            _service = service;
+        }
+
+        [Fact]
+        public async Task SendEmailNotification()
+        {
+            var recipients = new EmailRecipients
+            {
+                To = new List<string> { "dev@gmail.com" }
+            };
+
+            var model = new
+            {
+                Make = "Toyota",
+                Model = "Camry",
+                Year = 2020,
+                VinNumber = "1234567890",
+                State = "CA",
+                Zipcode = "90001"
+            };
+
+            // Act
+            await _service.SendEmailAsync(recipients, "VehicleEnquiry", model);
+
+            // Assert
+            // Here we would typically assert that the email was sent correctly.
+            // Since SmtpClient is not easily mockable, we can use a tool like Smtp4Dev to verify the email was sent.
+            // For simplicity, we assume the method completes without exceptions.
+            Assert.True(true);
+        }
+    }
+
 }

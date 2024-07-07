@@ -10,6 +10,7 @@ using NuovoAutoServer.Model;
 using NuovoAutoServer.Repository.DBContext;
 using NuovoAutoServer.Repository.Repository;
 using NuovoAutoServer.Services.API_Provider;
+using NuovoAutoServer.Services.EmailNotification;
 using NuovoAutoServer.Shared;
 
 using Polly;
@@ -31,13 +32,15 @@ namespace NuovoAutoServer.Services
         private readonly TelemetryClient _telemetryClient;
         private readonly ILogger _logger;
         private readonly AppSettings _appSettings;
+        private readonly EmailNotificationService _emailNotificationService;
 
-        public VehicleEnquiryService(IGenericRepository<CosmosDBContext> repository,TelemetryClient telemetryClient, ILoggerFactory loggerFactory, IOptions<AppSettings> appSettings)
+        public VehicleEnquiryService(IGenericRepository<CosmosDBContext> repository, TelemetryClient telemetryClient, ILoggerFactory loggerFactory, IOptions<AppSettings> appSettings, EmailNotificationService emailNotificationService)
         {
             _repo = repository;
             _telemetryClient = telemetryClient;
             _logger = loggerFactory.CreateLogger<VehicleDetailsService>();
             _appSettings = appSettings.Value;
+            _emailNotificationService = emailNotificationService;
         }
 
         public async Task SaveVehicleEnquiry(VehicleEnquiry vehicleEnquiry)
@@ -47,6 +50,35 @@ namespace NuovoAutoServer.Services
             vehicleEnquiry.SubmittedOn = DateTime.UtcNow;
 
             await _repo.AddAsync(vehicleEnquiry);
+            try
+            {
+                await SendEmail(vehicleEnquiry);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed to send email: SendEmailAsync");
+                _logger.LogError(ex, ex.Message);
+            }
+        }
+
+        private async Task SendEmail(VehicleEnquiry vehicleEnquiry)
+        {
+            var recipients = new EmailRecipients
+            {
+                To = new List<string> { vehicleEnquiry.Email }
+            };
+            await _emailNotificationService.SendEmailAsync(
+                recipients,
+                "VehicleEnquiry",
+                new
+                {
+                    vehicleEnquiry.Make,
+                    vehicleEnquiry.Model,
+                    vehicleEnquiry.Year,
+                    vehicleEnquiry.VinNumber,
+                    vehicleEnquiry.State,
+                    vehicleEnquiry.Zipcode
+                });
         }
 
         public async Task SaveVehicleEnquiryBulk(List<VehicleEnquiry> vehicleEnquiries)

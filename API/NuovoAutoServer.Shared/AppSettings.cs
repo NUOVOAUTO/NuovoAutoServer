@@ -8,6 +8,7 @@
         public bool LogDbDiagnosticts { get; set; }
         public int CacheExpirationTimeInHours { get; set; }
         public RateLimiting RateLimiting { get; set; }
+        public EmailConfig EmailConfig { get; set; }
     }
 
     public interface IAppSettings
@@ -41,5 +42,10 @@
         public int WindowDurationInHours { get; set; }
     }
 
-
+    public class EmailConfig
+    {
+        public string SenderEmail { get; set; }
+        public string SenderPwd { get; set; }
+        public string SenderHost { get; set; }
+    }
 }

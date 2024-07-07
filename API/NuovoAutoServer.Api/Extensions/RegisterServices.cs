@@ -13,6 +13,7 @@ using Rest.ApiClient.Extensions.Registrations;
 using Rest.ApiClient.Auth;
 using Microsoft.Extensions.Options;
 using NuovoAutoServer.Shared;
+using NuovoAutoServer.Services.EmailNotification;
 
 
 namespace NuovoAutoServer.Api.Extensions
@@ -27,6 +28,7 @@ namespace NuovoAutoServer.Api.Extensions
 
             services.AddTransient<VehicleDetailsService>();
             services.AddTransient<VehicleEnquiryService>();
+            services.AddTransient<EmailNotificationService>();
             services.AddSingleton<SecurityService>();
             services.AddTransient<IVehicleDetailsApiProvider, VehicleDatabaseApiProvider>();
 

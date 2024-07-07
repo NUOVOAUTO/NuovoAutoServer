@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 
 using NuovoAutoServer.Api.Extensions;
 using NuovoAutoServer.Services;
+using NuovoAutoServer.Services.EmailNotification;
 using NuovoAutoServer.Shared;
 
 using System;
@@ -22,9 +23,11 @@ namespace NuovoAutoServer.Tests
         public void ConfigureServices(IServiceCollection services)
         {
             var configuration = new ConfigurationBuilder()
-    .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-  .AddEnvironmentVariables()
-           .Build();
+         .SetBasePath(Directory.GetCurrentDirectory()) // Set the base path
+         .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
+         .AddJsonFile("EmailNotification/emailTemplates.json", optional: false, reloadOnChange: true) // Add the correct path to emailTemplates.json
+         .AddEnvironmentVariables()
+         .Build();
             services.AddSingleton<TelemetryClient>();
             services.AddLogging(builder =>
               {
@@ -34,6 +37,8 @@ namespace NuovoAutoServer.Tests
 
             var appSettings = configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettings);
+            services.Configure<EmailSettings>(configuration.GetSection("EmailSettings")); // Configure EmailSettings
+
             services.RegisterAll();
         }
     }

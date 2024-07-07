@@ -44,6 +44,8 @@ namespace NuovoAutoServer.Services
         {
             vehicleEnquiry.SetPartitionKey();
             vehicleEnquiry.OnCreated();
+            vehicleEnquiry.SubmittedOn = DateTime.UtcNow;
+
             await _repo.AddAsync(vehicleEnquiry);
         }
 

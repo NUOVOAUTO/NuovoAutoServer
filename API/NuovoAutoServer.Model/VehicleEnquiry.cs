@@ -13,11 +13,13 @@
         public string FullName { get; set; }
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
+        public string Zipcode { get; set; }
         public string Make { get; set; }
         public string Model { get; set; }
         public string Year { get; set; }
         public string State { get; set; }
         public string LicenseNumber { get; set; }
+        public DateTime SubmittedOn { get; set; }
         public string VinNumber
         {
             get => _vinNumber;

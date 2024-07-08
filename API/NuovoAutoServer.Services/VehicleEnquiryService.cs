@@ -6,6 +6,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Abstractions;
 
+using Newtonsoft.Json;
+
 using NuovoAutoServer.Model;
 using NuovoAutoServer.Repository.DBContext;
 using NuovoAutoServer.Repository.Repository;
@@ -18,6 +20,7 @@ using Polly;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Numerics;
 using System.Security.Policy;
@@ -45,6 +48,12 @@ namespace NuovoAutoServer.Services
 
         public async Task SaveVehicleEnquiry(VehicleEnquiry vehicleEnquiry)
         {
+            var vr = vehicleEnquiry.Validate();
+            if (vr.Any())
+            {
+                throw new ValidationException(JsonConvert.SerializeObject(new { errors = vr.Select(x => x.ErrorMessage) }));
+            }
+
             vehicleEnquiry.SetPartitionKey();
             vehicleEnquiry.OnCreated();
             vehicleEnquiry.SubmittedOn = DateTime.UtcNow;

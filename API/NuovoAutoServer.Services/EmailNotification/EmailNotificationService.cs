@@ -38,7 +38,7 @@ namespace NuovoAutoServer.Services.EmailNotification
                 From = new MailAddress(_appSettings.EmailConfig.SenderEmail),
                 Subject = subject,
                 Body = body,
-                IsBodyHtml = false
+                IsBodyHtml = true
             };
 
             // Add recipients from the method parameter
@@ -55,7 +55,6 @@ namespace NuovoAutoServer.Services.EmailNotification
             smtpClient.Port = 587;
             smtpClient.UseDefaultCredentials = false;
             smtpClient.Credentials = new NetworkCredential(_appSettings.EmailConfig.SenderEmail, _appSettings.EmailConfig.SenderPwd);
-            smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
             smtpClient.EnableSsl = true;
             await smtpClient.SendMailAsync(message);
         }

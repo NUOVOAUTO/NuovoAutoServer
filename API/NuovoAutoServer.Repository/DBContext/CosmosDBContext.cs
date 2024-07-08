@@ -87,6 +87,38 @@ namespace NuovoAutoServer.Repository.DBContext
                 .UseETagConcurrency();
             #endregion
 
+            #region Indexing
+
+            modelBuilder.Entity<VehicleEnquiry>().HasIndex(o => o.VinNumber);
+            modelBuilder.Entity<VehicleEnquiry>().HasAlternateKey(o => o.Email);
+            modelBuilder.Entity<VehicleEnquiry>().HasIndex(o => o.Email).IsUnique();
+
+            #endregion
+
+            #region RequiredProperties
+
+            modelBuilder.Entity<VehicleDetails>()
+                .Property(o => o.Vin)
+                .IsRequired();
+
+            modelBuilder.Entity<VehicleEnquiry>()
+                .Property(o => o.FullName)
+                .IsRequired();
+
+            modelBuilder.Entity<VehicleEnquiry>()
+                .Property(o => o.Email)
+                .IsRequired();
+
+            modelBuilder.Entity<VehicleEnquiry>()
+                .Property(o => o.PhoneNumber)
+                .IsRequired().HasMaxLength(15);
+
+            modelBuilder.Entity<VehicleEnquiry>()
+                .Property(o => o.Zipcode)
+                .IsRequired();
+
+            #endregion
+
             #region PropertyNames
             modelBuilder.Entity<VehicleDetails>()
              .Property(o => o.BasicDetails)

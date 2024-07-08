@@ -25,13 +25,11 @@ namespace NuovoAutoServer.Api
         }
 
         [Function("SaveVehicleEnquiry")]
-        public async Task<HttpResponseData> SaveVehicleEnquiry([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData req)
+        public async Task<HttpResponseData> SaveVehicleEnquiry([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData req, [FromBody]VehicleEnquiry vehicleEnquiry)
         {
             try
             {
                 string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-                var vehicleEnquiry = JsonConvert.DeserializeObject<VehicleEnquiry>(requestBody);
-
                 await _vehicleEnquiryService.SaveVehicleEnquiry(vehicleEnquiry);
 
                 var response = req.CreateResponse(HttpStatusCode.OK);

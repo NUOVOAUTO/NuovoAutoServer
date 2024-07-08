@@ -3,8 +3,8 @@
     "Sender": "dev.nuovoauto@outlook.com",
     "Templates": {
       "VehicleEnquiry": {
-        "Subject": "WebuyCarz - Enquiry Submitted - {VinNumber}",
-        "Body": "Thank you for submitting the request to webuycarz for the below car Make:{Make}, Model:{Model}, Year: {Year}, Vin: {VinNumber}, State:{State}, Zipcode: {Zipcode}",
+        "Subject": "WebuyCarz - Your Vehicle Enquiry for {Make} {Model} ({Year}) - {VinNumber}",
+        "Body": "<html><body><h2>Thank you for submitting the request to WebuyCarz</h2><p>We have received your enquiry for the following vehicle:</p><table border=\"1\" cellpadding=\"5\" cellspacing=\"0\"><tr><th>Make</th><td>{Make}</td></tr><tr><th>Model</th><td>{Model}</td></tr><tr><th>Year</th><td>{Year}</td></tr><tr><th>Vin</th><td>{VinNumber}</td></tr><tr><th>State</th><td>{State}</td></tr><tr><th>Zipcode</th><td>{Zipcode}</td></tr></table><p>We will get back to you shortly with more details.</p><p>Best regards,<br/>WebuyCarz Team</p></body></html>",
         "Recipients": {
           "To": [],
           "CC": [],

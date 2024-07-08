@@ -4,7 +4,7 @@
     "Templates": {
       "VehicleEnquiry": {
         "Subject": "WebuyCarz - Your Vehicle Enquiry for {Make} {Model} ({Year}) - {VinNumber}",
-        "Body": "<html><body><h2>Thank you for submitting the request to WebuyCarz</h2><p>We have received your enquiry for the following vehicle:</p><table border=\"1\" cellpadding=\"5\" cellspacing=\"0\"><tr><th>Make</th><td>{Make}</td></tr><tr><th>Model</th><td>{Model}</td></tr><tr><th>Year</th><td>{Year}</td></tr><tr><th>Vin</th><td>{VinNumber}</td></tr><tr><th>State</th><td>{State}</td></tr><tr><th>Zipcode</th><td>{Zipcode}</td></tr></table><p>We will get back to you shortly with more details.</p><p>Best regards,<br/>WebuyCarz Team</p></body></html>",
+        "Body": "<html><body><h2>Dear {FullName},</h2><p>Thank you for submitting your vehicle enquiry to WebuyCarz. We have received the following details about your vehicle:</p><table border=\"1\" cellpadding=\"5\" cellspacing=\"0\"><tr><th>Make</th><td>{Make}</td></tr><tr><th>Model</th><td>{Model}</td></tr><tr><th>Year</th><td>{Year}</td></tr><tr><th>Vin</th><td>{VinNumber}</td></tr><tr><th>State</th><td>{State}</td></tr><tr><th>Zipcode</th><td>{Zipcode}</td></tr></table><p>Our team will review the information and get back to you shortly with more details.</p><p>If you have any questions in the meantime, please feel free to contact us at support.webuycarz@outlook.com.</p><p>Best regards,<br/>The WebuyCarz Team</p></body></html>",
         "Recipients": {
           "To": [],
           "CC": [],

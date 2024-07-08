@@ -79,15 +79,7 @@ namespace NuovoAutoServer.Services
             await _emailNotificationService.SendEmailAsync(
                 recipients,
                 "VehicleEnquiry",
-                new
-                {
-                    vehicleEnquiry.Make,
-                    vehicleEnquiry.Model,
-                    vehicleEnquiry.Year,
-                    vehicleEnquiry.VinNumber,
-                    vehicleEnquiry.State,
-                    vehicleEnquiry.Zipcode
-                });
+                vehicleEnquiry);
         }
 
         public async Task SaveVehicleEnquiryBulk(List<VehicleEnquiry> vehicleEnquiries)

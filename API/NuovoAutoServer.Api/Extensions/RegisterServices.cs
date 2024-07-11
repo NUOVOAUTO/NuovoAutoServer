@@ -30,6 +30,7 @@ namespace NuovoAutoServer.Api.Extensions
             services.AddTransient<VehicleEnquiryService>();
             services.AddTransient<EmailNotificationService>();
             services.AddSingleton<SecurityService>();
+            services.AddSingleton<RetryHandler>();
             services.AddTransient<IVehicleDetailsApiProvider, VehicleDatabaseApiProvider>();
 
             using (var scope = serviceProvider.CreateScope())

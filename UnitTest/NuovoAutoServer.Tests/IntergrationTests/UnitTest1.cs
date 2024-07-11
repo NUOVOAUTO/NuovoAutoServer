@@ -1,5 +1,6 @@
 
 using Microsoft.ApplicationInsights;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -24,20 +25,37 @@ namespace NuovoAutoServer.Tests.IntergrationTests
 {
     public class VehicleDetailsIntegrationTest
     {
-        [Fact]
-        public void GetByTagNumber()
+        private readonly VehicleDetailsService _service;
+        private readonly IGenericRepository<CosmosDBContext> _repo;
+        public VehicleDetailsIntegrationTest(VehicleDetailsService service, IGenericRepository<CosmosDBContext> repo)
         {
+            _repo = repo;
+            _service = service;
+        }
+        [Fact]
+        public async Task GetByTagNumber()
+        {
+            var task = new List<Task<VehicleDetails>>();
+            task.Add(_service.GetByTagNumber("8ex6288", "MD"));
+            task.Add(_service.GetByTagNumber("8ex6288", "MD"));
 
+            var d = await Task.WhenAll(task);
+            foreach (var item in d)
+            {
+
+            }
         }
     }
 
     public class VehicleEnquiryServiceTests
     {
         private readonly VehicleEnquiryService _service;
+        private readonly IGenericRepository<CosmosDBContext> _repo;
 
-        public VehicleEnquiryServiceTests(VehicleEnquiryService vehicleEnquiryService)
+        public VehicleEnquiryServiceTests(VehicleEnquiryService vehicleEnquiryService, IGenericRepository<CosmosDBContext> repo)
         {
             _service = vehicleEnquiryService;
+            _repo = repo;
         }
 
         [Fact]
@@ -97,14 +115,15 @@ namespace NuovoAutoServer.Tests.IntergrationTests
         {
             var recipients = new EmailRecipients
             {
-                To = new List<string> { "dev@gmail.com" }
+                To = new List<string> { "hari.krish7.us@gmail.com" }
             };
 
-            var model = new
+            var model = new VehicleEnquiry()
             {
                 Make = "Toyota",
                 Model = "Camry",
-                Year = 2020,
+                Year = "2020",
+                FullName = "Hari Krish",
                 VinNumber = "1234567890",
                 State = "CA",
                 Zipcode = "90001"

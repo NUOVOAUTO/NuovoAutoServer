@@ -11,6 +11,7 @@ using Newtonsoft.Json.Linq;
 using NuovoAutoServer.Api.Extensions;
 using NuovoAutoServer.Model;
 using NuovoAutoServer.Services;
+using NuovoAutoServer.Shared;
 using NuovoAutoServer.Shared.CustomExceptions;
 
 namespace NuovoAutoServer.Api
@@ -21,12 +22,14 @@ namespace NuovoAutoServer.Api
 
         private readonly VehicleDetailsService _vehicleDetailsService;
         private readonly SecurityService _securityService; // Added SecurityService
+        private readonly RetryHandler _retryHandler; // Added RetryHandler
 
-        public VehicleDetailsFunction(ILoggerFactory loggerFactory, VehicleDetailsService vehicleDetialsService, SecurityService securityService) // Injected SecurityService
+        public VehicleDetailsFunction(ILoggerFactory loggerFactory, VehicleDetailsService vehicleDetialsService, SecurityService securityService, RetryHandler retryHandler) // Injected SecurityService and RetryHandler
         {
             _logger = loggerFactory.CreateLogger<VehicleDetailsFunction>();
             _vehicleDetailsService = vehicleDetialsService;
             _securityService = securityService; // Assigned injected SecurityService
+            _retryHandler = retryHandler; // Assigned injected RetryHandler
         }
 
         [Function("Function1")]
@@ -42,7 +45,7 @@ namespace NuovoAutoServer.Api
 
         [Function("GetByTagNumber")]
         public async Task<HttpResponseData> GetByTagNumber([HttpTrigger(AuthorizationLevel.Function, "get",
-    Route = "VehicleDetails/searchByTagNumber/{tag}/{state}")] HttpRequestData req, string tag, string state,
+        Route = "VehicleDetails/searchByTagNumber/{tag}/{state}")] HttpRequestData req, string tag, string state,
 FunctionContext executionContext)
         {
             try
@@ -51,7 +54,7 @@ FunctionContext executionContext)
 
                 _logger.LogInformation("C# HTTP trigger function processed a request.");
 
-                var vd = await _vehicleDetailsService.GetByTagNumber(tag, state);
+                var vd = await _retryHandler.ExponentialRetry(async () => await _vehicleDetailsService.GetByTagNumber(tag.Trim(), state.Trim()), "VehicleDetailsFunction.GetByTagNumber"); // Added retry logic
 
                 var response = req.CreateResponse(HttpStatusCode.OK);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
@@ -87,7 +90,7 @@ FunctionContext executionContext)
 
         [Function("GetByVinNumber")]
         public async Task<HttpResponseData> GetByVinNumber([HttpTrigger(AuthorizationLevel.Function, "get",
-    Route = "VehicleDetails/searchByVinNumber/{vin}")] HttpRequestData req, string vin,
+        Route = "VehicleDetails/searchByVinNumber/{vin}")] HttpRequestData req, string vin,
 FunctionContext executionContext)
         {
             try
@@ -96,7 +99,7 @@ FunctionContext executionContext)
 
                 _logger.LogInformation("C# HTTP trigger function processed a request.");
 
-                var vd = await _vehicleDetailsService.GetByVinNumber(vin);
+                var vd = await _retryHandler.ExponentialRetry(async () => await _vehicleDetailsService.GetByVinNumber(vin.Trim()), "VehicleDetailsFunction.GetByVinNumber"); // Added retry logic
 
                 var response = req.CreateResponse(HttpStatusCode.OK);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
@@ -105,7 +108,7 @@ FunctionContext executionContext)
                 await response.WriteStringAsync(json);
                 return response;
             }
-            catch(IPNotFoundException ex)
+            catch (IPNotFoundException ex)
             {
                 var response = req.CreateResponse(HttpStatusCode.Forbidden);
                 _logger.LogError(ex.Message);

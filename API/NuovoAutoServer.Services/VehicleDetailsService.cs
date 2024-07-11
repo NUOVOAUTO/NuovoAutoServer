@@ -29,19 +29,21 @@ namespace NuovoAutoServer.Services
         private readonly TelemetryClient _telemetryClient;
         private readonly ILogger _logger;
         private readonly AppSettings _appSettings;
+        private readonly RetryHandler _retryHandler;
 
         private bool IsExpired(DateTime dt)
         {
             return dt.AddHours(_appSettings.CacheExpirationTimeInHours) <= DateTime.Now;
         }
 
-        public VehicleDetailsService(IGenericRepository<CosmosDBContext> repository, IVehicleDetailsApiProvider vehicleDetailsApiProvider, TelemetryClient telemetryClient, ILoggerFactory loggerFactory, IOptions<AppSettings> appSettings)
+        public VehicleDetailsService(IGenericRepository<CosmosDBContext> repository, IVehicleDetailsApiProvider vehicleDetailsApiProvider, TelemetryClient telemetryClient, ILoggerFactory loggerFactory, IOptions<AppSettings> appSettings, RetryHandler retryHandler)
         {
             _repo = repository;
             _vehicleDetailsApiProvider = vehicleDetailsApiProvider;
             _telemetryClient = telemetryClient;
             _logger = loggerFactory.CreateLogger<VehicleDetailsService>();
             _appSettings = appSettings.Value;
+            _retryHandler = retryHandler;
         }
 
         public async Task<VehicleDetails> GetByTagNumber(string tagNumber, string state)
@@ -59,7 +61,7 @@ namespace NuovoAutoServer.Services
             if (isExpired || vehicleDetails == null)
             {
                 _logger.LogInformation("Fetching fresh details from API for tag number: {0} and state: {1}", tagNumber, state);
-                var freshDetails = await _vehicleDetailsApiProvider.GetByTagNumber(tagNumber, state);
+                var freshDetails = await _retryHandler.ExponentialRetry(async () => await _vehicleDetailsApiProvider.GetByTagNumber(tagNumber, state), "VehicleDetailsService.GetByTagNumber");
 
                 if (freshDetails == null)
                 {
@@ -79,7 +81,7 @@ namespace NuovoAutoServer.Services
 
                 VehicleDetails? freshVinDetails = null;
                 _logger.LogInformation("Fetching fresh VIN details for VIN: {Vin}", freshDetails.Vin);
-                freshVinDetails = await _vehicleDetailsApiProvider.GetByVinNumber(freshDetails.Vin, freshDetails.LicenseNumber);
+                freshVinDetails = await _retryHandler.ExponentialRetry(async () => await _vehicleDetailsApiProvider.GetByVinNumber(freshDetails.Vin, freshDetails.LicenseNumber), "VehicleDetailsService.GetByTagNumber.GetByVinNumber");
                 freshVinDetails.LicenseNumber = freshDetails.LicenseNumber;
                 freshVinDetails.State = freshDetails.State;
                 vehicleDetails = await AddOrUpdateVehicleDetailsAsync(null, freshVinDetails);
@@ -102,7 +104,7 @@ namespace NuovoAutoServer.Services
             if (isExpired || vehicleDetails == null || vehicleDetails?.IsVinDetailsFetched == false)
             {
                 _logger.LogInformation("Fetching fresh details from API for VIN: {0}", vinNumber);
-                var freshDetails = await _vehicleDetailsApiProvider.GetByVinNumber(vinNumber);
+                var freshDetails = await _retryHandler.ExponentialRetry(async () => await _vehicleDetailsApiProvider.GetByVinNumber(vinNumber), "VehicleDetailsService.GetByVinNumber");
 
                 if (freshDetails == null)
                 {

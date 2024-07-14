@@ -29,7 +29,8 @@ using System.Threading.Tasks;
 
 namespace NuovoAutoServer.Services
 {
-    public class VehicleEnquiryService
+    [Obsolete]
+    public class VehicleEnquiryService : IVehicleEnquiryService
     {
         private readonly IGenericRepository<CosmosDBContext> _repo;
         private readonly TelemetryClient _telemetryClient;
@@ -56,7 +57,7 @@ namespace NuovoAutoServer.Services
 
             vehicleEnquiry.SetPartitionKey();
             vehicleEnquiry.OnCreated();
-            vehicleEnquiry.SubmittedOn = DateTime.UtcNow;
+            vehicleEnquiry.SubmittedOn = TimeZoneInfo.ConvertTime(DateTimeOffset.Now, TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time"));
 
             await _repo.AddAsync(vehicleEnquiry);
             try
@@ -103,6 +104,11 @@ namespace NuovoAutoServer.Services
                                       .ToListAsync();
 
             return (items, totalCount);
+        }
+
+        public Task<VehicleEnquiry> GetVehicleEnquiry(Guid id)
+        {
+            throw new NotImplementedException();
         }
     }
 

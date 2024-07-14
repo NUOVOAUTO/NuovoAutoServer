@@ -16,16 +16,16 @@ namespace NuovoAutoServer.Api
     public class VehicleEnquiryFunction
     {
         private readonly ILogger<VehicleEnquiryFunction> _logger;
-        private readonly VehicleEnquiryService _vehicleEnquiryService;
+        private readonly VehicleEnquiryServiceSQL _vehicleEnquiryService;
 
-        public VehicleEnquiryFunction(ILogger<VehicleEnquiryFunction> logger, VehicleEnquiryService vehicleEnquiryService)
+        public VehicleEnquiryFunction(ILogger<VehicleEnquiryFunction> logger, VehicleEnquiryServiceSQL vehicleEnquiryService)
         {
             _logger = logger;
             _vehicleEnquiryService = vehicleEnquiryService;
         }
 
         [Function("SaveVehicleEnquiry")]
-        public async Task<HttpResponseData> SaveVehicleEnquiry([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData req, [FromBody]VehicleEnquiry vehicleEnquiry)
+        public async Task<HttpResponseData> SaveVehicleEnquiry([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData req, [FromBody] VehicleEnquiry vehicleEnquiry)
         {
             try
             {
@@ -55,6 +55,39 @@ namespace NuovoAutoServer.Api
                 return response;
             }
         }
+
+        [Function("GetVehicleEnquiry")]
+        public async Task<HttpResponseData> GetVehicleEnquiry([HttpTrigger(AuthorizationLevel.Function, "Get", Route = "VehicleEnquiry/{id}")] HttpRequestData req, Guid id)
+        {
+            try
+            {
+                string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+                var ve = await _vehicleEnquiryService.GetVehicleEnquiry(id);
+
+                var response = req.CreateResponse(HttpStatusCode.OK);
+                await response.WriteAsJsonAsync(ve);
+                return response;
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                var response = req.CreateResponse(HttpStatusCode.BadRequest);
+                if (ex.InnerException is Microsoft.Azure.Cosmos.CosmosException cosmosEx)
+                    await response.WriteStringAsync(cosmosEx.ResponseBody);
+                else
+                    await response.WriteStringAsync(ex.InnerException?.Message ?? ex.Message);
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                var response = req.CreateResponse(HttpStatusCode.BadRequest);
+                await response.WriteStringAsync(ex.Message);
+                return response;
+            }
+        }
+
 
         [Function("GetAllVehicleEnquiries")]
         public async Task<HttpResponseData> GetAllVehicleEnquiries([HttpTrigger(AuthorizationLevel.Function, "get", Route = "VehicleEnquiries")] HttpRequestData req)

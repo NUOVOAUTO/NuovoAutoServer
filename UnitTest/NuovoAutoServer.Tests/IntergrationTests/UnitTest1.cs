@@ -25,9 +25,9 @@ namespace NuovoAutoServer.Tests.IntergrationTests
 {
     public class VehicleDetailsIntegrationTest
     {
-        private readonly VehicleDetailsService _service;
+        private readonly VehicleDetailsServiceSQL _service;
         private readonly IGenericRepository<CosmosDBContext> _repo;
-        public VehicleDetailsIntegrationTest(VehicleDetailsService service, IGenericRepository<CosmosDBContext> repo)
+        public VehicleDetailsIntegrationTest(VehicleDetailsServiceSQL service, IGenericRepository<CosmosDBContext> repo)
         {
             _repo = repo;
             _service = service;
@@ -49,10 +49,10 @@ namespace NuovoAutoServer.Tests.IntergrationTests
 
     public class VehicleEnquiryServiceTests
     {
-        private readonly VehicleEnquiryService _service;
+        private readonly VehicleEnquiryServiceSQL _service;
         private readonly IGenericRepository<CosmosDBContext> _repo;
 
-        public VehicleEnquiryServiceTests(VehicleEnquiryService vehicleEnquiryService, IGenericRepository<CosmosDBContext> repo)
+        public VehicleEnquiryServiceTests(VehicleEnquiryServiceSQL vehicleEnquiryService, IGenericRepository<CosmosDBContext> repo)
         {
             _service = vehicleEnquiryService;
             _repo = repo;
@@ -90,7 +90,7 @@ namespace NuovoAutoServer.Tests.IntergrationTests
             foreach (var Enquiry in vehicleEnquiriesFromJson)
             {
                 counter++;
-                Enquiry.Id = $"TESTDATA-{counter}";
+                Enquiry.Id = Guid.NewGuid();
             }
 
             // Act
@@ -120,12 +120,9 @@ namespace NuovoAutoServer.Tests.IntergrationTests
 
             var model = new VehicleEnquiry()
             {
-                Make = "Toyota",
-                Model = "Camry",
-                Year = "2020",
                 FullName = "Hari Krish",
                 VinNumber = "1234567890",
-                State = "CA",
+                StateCode = "CA",
                 Zipcode = "90001"
             };
 

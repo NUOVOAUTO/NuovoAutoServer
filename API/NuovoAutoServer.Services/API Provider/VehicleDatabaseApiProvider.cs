@@ -35,7 +35,7 @@ namespace NuovoAutoServer.Services.API_Provider
             var res = await data.Content.ReadAsStringAsync();
             var jb = JObject.Parse(res);
             var vd = new VehicleDetails(tagNumber, jb["data"]["intro"]["vin"].ToString(), jb["data"] as JObject);
-            vd.State = state;
+            vd.StateCode = state;
             return vd;
         }
 
@@ -67,7 +67,7 @@ namespace NuovoAutoServer.Services.API_Provider
             var data = await this.GetByTagNumber();
             var jb = JObject.Parse(data);
             var vd = new VehicleDetails(tagNumber, jb["data"]["intro"]["vin"].ToString(), jb["data"] as JObject);
-            vd.State = state;
+            vd.StateCode = state;
             await Task.CompletedTask;
             return vd;
         }

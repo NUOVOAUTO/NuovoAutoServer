@@ -20,11 +20,11 @@ namespace NuovoAutoServer.Api
     {
         private readonly ILogger _logger;
 
-        private readonly VehicleDetailsService _vehicleDetailsService;
+        private readonly VehicleDetailsServiceSQL _vehicleDetailsService;
         private readonly SecurityService _securityService; // Added SecurityService
         private readonly RetryHandler _retryHandler; // Added RetryHandler
 
-        public VehicleDetailsFunction(ILoggerFactory loggerFactory, VehicleDetailsService vehicleDetialsService, SecurityService securityService, RetryHandler retryHandler) // Injected SecurityService and RetryHandler
+        public VehicleDetailsFunction(ILoggerFactory loggerFactory, VehicleDetailsServiceSQL vehicleDetialsService, SecurityService securityService, RetryHandler retryHandler) // Injected SecurityService and RetryHandler
         {
             _logger = loggerFactory.CreateLogger<VehicleDetailsFunction>();
             _vehicleDetailsService = vehicleDetialsService;
@@ -54,7 +54,7 @@ FunctionContext executionContext)
 
                 _logger.LogInformation("C# HTTP trigger function processed a request.");
 
-                var vd = await _retryHandler.ExponentialRetry(async () => await _vehicleDetailsService.GetByTagNumber(tag.Trim(), state.Trim()), "VehicleDetailsFunction.GetByTagNumber"); // Added retry logic
+                var vd = await _vehicleDetailsService.GetByTagNumber(tag.Trim(), state.Trim());
 
                 var response = req.CreateResponse(HttpStatusCode.OK);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
@@ -82,6 +82,7 @@ FunctionContext executionContext)
             catch (Exception ex)
             {
                 var response = req.CreateResponse(HttpStatusCode.BadRequest);
+                _logger.LogError(ex, ex.Message);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
                 await response.WriteStringAsync(ex.Message);
                 return response;
@@ -99,7 +100,7 @@ FunctionContext executionContext)
 
                 _logger.LogInformation("C# HTTP trigger function processed a request.");
 
-                var vd = await _retryHandler.ExponentialRetry(async () => await _vehicleDetailsService.GetByVinNumber(vin.Trim()), "VehicleDetailsFunction.GetByVinNumber"); // Added retry logic
+                var vd = await _vehicleDetailsService.GetByVinNumber(vin.Trim());
 
                 var response = req.CreateResponse(HttpStatusCode.OK);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");

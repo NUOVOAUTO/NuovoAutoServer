@@ -6,7 +6,7 @@ namespace NuovoAutoServer.Model
     {
         private string _vinNumber;
 
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public Guid? Id { get; set; }
 
         [Required]
         [MinLength(1)]
@@ -25,20 +25,12 @@ namespace NuovoAutoServer.Model
         [RegularExpression(@"^\d{5}(-\d{4})?$", ErrorMessage = "Invalid Zip Code format.")]
         public string Zipcode { get; set; }
 
-        [Required]
-        [MinLength(1)]
-        public string Make { get; set; }
 
-        [Required]
-        [MinLength(1)]
-        public string Model { get; set; }
-
-        [Required]
-        [MinLength(1)]
-        public string Year { get; set; }
-        public string State { get; set; }
+        public string? StateCode { get; set; }
         public string LicenseNumber { get; set; }
-        public DateTime SubmittedOn { get; set; }
+        public DateTimeOffset SubmittedOn { get; set; } = TimeZoneInfo.ConvertTime(DateTimeOffset.Now, TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time"));
+        public string? EnquiryStatus { get; set; }
+        public string? EnquiryComments { get; set; }
         public string VinNumber
         {
             get => _vinNumber;
@@ -53,7 +45,7 @@ namespace NuovoAutoServer.Model
 
         public override string SetPartitionKey()
         {
-            return PartitionKey = $"{State}";
+            return PartitionKey = $"{StateCode}";
         }
 
         public IEnumerable<ValidationResult> Validate()
@@ -83,19 +75,19 @@ namespace NuovoAutoServer.Model
                 yield return new ValidationResult("VinNumber cannot be empty or whitespace.", new[] { nameof(VinNumber) });
             }
 
-            if (string.IsNullOrWhiteSpace(Make))
+            if (string.IsNullOrWhiteSpace(VehicleEnquiryDetails?.Make))
             {
-                yield return new ValidationResult("Make cannot be empty or whitespace.", new[] { nameof(Make) });
+                yield return new ValidationResult("Make cannot be empty or whitespace.", new[] { nameof(VehicleEnquiryDetails.Make) });
             }
 
-            if (string.IsNullOrWhiteSpace(Model))
+            if (string.IsNullOrWhiteSpace(VehicleEnquiryDetails?.Model))
             {
-                yield return new ValidationResult("Model cannot be empty or whitespace.", new[] { nameof(Model) });
+                yield return new ValidationResult("Model cannot be empty or whitespace.", new[] { nameof(VehicleEnquiryDetails.Model) });
             }
 
-            if (string.IsNullOrWhiteSpace(Year))
+            if (string.IsNullOrWhiteSpace(VehicleEnquiryDetails?.Year))
             {
-                yield return new ValidationResult("Year cannot be empty or whitespace.", new[] { nameof(Year) });
+                yield return new ValidationResult("Year cannot be empty or whitespace.", new[] { nameof(VehicleEnquiryDetails.Year) });
             }
 
             if (string.IsNullOrWhiteSpace(VehicleEnquiryDetails?.CurrentMileage))
@@ -106,12 +98,27 @@ namespace NuovoAutoServer.Model
     }
     public class VehicleEnquiryDetails
     {
+        public Guid? Id { get; set; }
+        public Guid VehicleEnquiryId { get; set; }
+        public VehicleEnquiry VehicleEnquiry { get; set; }
+
+        [Required]
+        [MinLength(1)]
+        public string Make { get; set; }
+
+        [Required]
+        [MinLength(1)]
+        public string Model { get; set; }
+
+        [Required]
+        [MinLength(1)]
+        public string Year { get; set; }
+
         public string Style { get; set; }
         public string Drivetrain { get; set; }
         public string Transmission { get; set; }
         public List<string> Features { get; set; }
         public string CurrentMileage { get; set; }
-        public string AddtionalInfo { get; set; }
         public string HasBeenInAccident { get; set; }
         public string HasFrameDamage { get; set; }
         public string HasFloodDamage { get; set; }

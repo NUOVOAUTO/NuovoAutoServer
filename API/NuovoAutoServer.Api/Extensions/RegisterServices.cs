@@ -26,8 +26,10 @@ namespace NuovoAutoServer.Api.Extensions
 
             services.RegisterRepositories();
 
-            services.AddTransient<VehicleDetailsService>();
-            services.AddTransient<VehicleEnquiryService>();
+            //services.AddTransient<VehicleDetailsService>();
+            //services.AddTransient<VehicleEnquiryService>();
+            services.AddTransient<VehicleDetailsServiceSQL>();
+            services.AddTransient<VehicleEnquiryServiceSQL>();
             services.AddTransient<EmailNotificationService>();
             services.AddSingleton<SecurityService>();
             services.AddSingleton<RetryHandler>();

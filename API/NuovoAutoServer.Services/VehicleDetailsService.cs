@@ -22,7 +22,8 @@ using System.Threading.Tasks;
 
 namespace NuovoAutoServer.Services
 {
-    public class VehicleDetailsService
+    [Obsolete]
+    public class VehicleDetailsService : IVehicleDetailsService
     {
         private readonly IGenericRepository<CosmosDBContext> _repo;
         private readonly IVehicleDetailsApiProvider _vehicleDetailsApiProvider;
@@ -31,9 +32,9 @@ namespace NuovoAutoServer.Services
         private readonly AppSettings _appSettings;
         private readonly RetryHandler _retryHandler;
 
-        private bool IsExpired(DateTime dt)
+        private bool IsExpired(DateTimeOffset dt)
         {
-            return dt.AddHours(_appSettings.CacheExpirationTimeInHours) <= DateTime.Now;
+            return dt.AddHours(_appSettings.CacheExpirationTimeInHours) <= TimeZoneInfo.ConvertTime(DateTimeOffset.Now, TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time"));
         }
 
         public VehicleDetailsService(IGenericRepository<CosmosDBContext> repository, IVehicleDetailsApiProvider vehicleDetailsApiProvider, TelemetryClient telemetryClient, ILoggerFactory loggerFactory, IOptions<AppSettings> appSettings, RetryHandler retryHandler)
@@ -50,7 +51,7 @@ namespace NuovoAutoServer.Services
         {
             // Query to get the vehicle details by tag number and state
             var vehicleDetails = await _repo.Get<VehicleDetails>()
-                                            .Where(x => x.PartitionKey.StartsWith(tagNumber) && x.State == state)
+                                            .Where(x => x.PartitionKey.StartsWith(tagNumber) && x.StateCode == state)
                                             .FirstOrDefaultAsync();
 
             // Check if the vehicle details are expired
@@ -83,7 +84,7 @@ namespace NuovoAutoServer.Services
                 _logger.LogInformation("Fetching fresh VIN details for VIN: {Vin}", freshDetails.Vin);
                 freshVinDetails = await _retryHandler.ExponentialRetry(async () => await _vehicleDetailsApiProvider.GetByVinNumber(freshDetails.Vin, freshDetails.LicenseNumber), "VehicleDetailsService.GetByTagNumber.GetByVinNumber");
                 freshVinDetails.LicenseNumber = freshDetails.LicenseNumber;
-                freshVinDetails.State = freshDetails.State;
+                freshVinDetails.StateCode = freshDetails.StateCode;
                 vehicleDetails = await AddOrUpdateVehicleDetailsAsync(null, freshVinDetails);
             }
 

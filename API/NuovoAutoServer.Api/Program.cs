@@ -35,7 +35,7 @@ var host = new HostBuilder()
         {
             jsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
             jsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-            jsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+            jsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
             // override the default value
             jsonSerializerOptions.PropertyNameCaseInsensitive = false;
         });

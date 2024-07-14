@@ -10,10 +10,10 @@ namespace NuovoAutoServer.Model
 {
     public abstract class DomainModelBase
     {
-        public DateTime CreatedDateTime { get; set; }= DateTime.Now;
-        public DateTime LastUpdatedDateTime { get; set; } = DateTime.Now;
+        public DateTimeOffset CreatedDateTime { get; set; } = TimeZoneInfo.ConvertTime(DateTimeOffset.Now, TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time"));
+        public DateTimeOffset LastUpdatedDateTime { get; set; } = TimeZoneInfo.ConvertTime(DateTimeOffset.Now, TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time"));
         public Guid CreateUserId { get; set; }
-        public Guid LastUpdatedUserId{ get; set; }
+        public Guid LastUpdatedUserId { get; set; }
 
         public virtual string PartitionKey { get; set; }
 
@@ -21,7 +21,7 @@ namespace NuovoAutoServer.Model
 
         public void OnCreated(Guid userId)
         {
-            CreatedDateTime = DateTime.UtcNow;
+            CreatedDateTime = TimeZoneInfo.ConvertTime(DateTimeOffset.Now, TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time"));
             LastUpdatedDateTime = CreatedDateTime;
             CreateUserId = userId;
             LastUpdatedUserId = userId;
@@ -29,7 +29,7 @@ namespace NuovoAutoServer.Model
 
         public void OnCreated()
         {
-            CreatedDateTime = DateTime.UtcNow;
+            CreatedDateTime = TimeZoneInfo.ConvertTime(DateTimeOffset.Now, TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time"));
             LastUpdatedDateTime = CreatedDateTime;
             CreateUserId = Guid.Empty;
             LastUpdatedUserId = Guid.Empty;
@@ -38,20 +38,20 @@ namespace NuovoAutoServer.Model
 
         public void OnChanged(Guid userId)
         {
-            LastUpdatedDateTime = DateTime.UtcNow;
+            LastUpdatedDateTime = TimeZoneInfo.ConvertTime(DateTimeOffset.Now, TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time"));
             LastUpdatedUserId = userId;
         }
 
         public void OnChanged()
         {
-            LastUpdatedDateTime = DateTime.UtcNow;
+            LastUpdatedDateTime = TimeZoneInfo.ConvertTime(DateTimeOffset.Now, TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time"));
             LastUpdatedUserId = Guid.Empty;
         }
 
         public void OnChanged(DomainModelBase domainModelBase)
         {
             CreatedDateTime = domainModelBase.CreatedDateTime;
-            LastUpdatedDateTime = DateTime.UtcNow;
+            LastUpdatedDateTime = TimeZoneInfo.ConvertTime(DateTimeOffset.Now, TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time"));
 
             CreateUserId = domainModelBase.CreateUserId;
             LastUpdatedUserId = Guid.Empty;

@@ -53,7 +53,7 @@ namespace NuovoAutoServer.Api.Extensions
 
         private bool IsRateLimitExceeded(string callerIP)
         {
-            var now = DateTimeOffset.UtcNow;
+            var now = TimeZoneInfo.ConvertTime(DateTimeOffset.Now, TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time"));
             var period = TimeSpan.FromHours(this._appSettings.RateLimiting.WindowDurationInHours);
             var allowedRequests = this._appSettings.RateLimiting.RequestsLimit;
 

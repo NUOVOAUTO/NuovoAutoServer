@@ -19,6 +19,14 @@ namespace NuovoAutoServer.Model
             LicenseNumber = licenseNumber;
             Vin = vin;
             BasicDetails = data ?? new JObject();
+            if (data != null)
+            {
+                Make = data?["basic"]?["make"]?.ToString();
+                Model = data?["basic"]?["model"]?.ToString();
+                Year = data?["basic"]?["year"]?.ToString();
+                Transmission = data?["transmission"]?["transmission_style"]?.ToString();
+                Drivetrain = data?["drivetrain"]?["drive_type"]?.ToString();
+            }
             SetPartitionKey();
         }
         public string Id { get; set; }
@@ -26,7 +34,12 @@ namespace NuovoAutoServer.Model
         public string LicenseNumber { get; set; }
         public string Vin { get; set; }
 
-        public string? State { get; set; }
+        public string? StateCode { get; set; }
+        public string? Make { get; set; }
+        public string? Model { get; set; }
+        public string? Year { get; set; }
+        public string? Transmission { get; set; }
+        public string? Drivetrain { get; set; }
 
         public JObject BasicDetails { get; set; }
         public bool? IsVinDetailsFetched { get; set; }
@@ -40,7 +53,7 @@ namespace NuovoAutoServer.Model
         {
             this.LicenseNumber = this.LicenseNumber ?? source.LicenseNumber;
             this.Vin = this.Vin ?? source.Vin;
-            this.State = this.State ?? source.State;
+            this.StateCode = this.StateCode ?? source.StateCode;
             this.BasicDetails = source.BasicDetails;
             this.IsVinDetailsFetched = source.IsVinDetailsFetched;
             this.SetPartitionKey();
@@ -51,5 +64,5 @@ namespace NuovoAutoServer.Model
         }
     }
 
- 
+
 }

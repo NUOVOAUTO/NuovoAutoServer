@@ -94,6 +94,7 @@ FunctionContext executionContext)
         Route = "VehicleDetails/searchByVinNumber/{vin}")] HttpRequestData req, string vin,
 FunctionContext executionContext)
         {
+            ApiResponseModel apiResponseModel = new ();
             try
             {
                 _securityService.ValidateClientIp(req);
@@ -114,7 +115,8 @@ FunctionContext executionContext)
                 var response = req.CreateResponse(HttpStatusCode.Forbidden);
                 _logger.LogError(ex.Message);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
-                await response.WriteStringAsync("Invalid IP Address");
+                apiResponseModel.ErrorMessage = ex.Message;
+                await response.WriteAsJsonAsync(apiResponseModel);
                 return response;
             }
             catch (RateLimitExceededException ex)
@@ -122,14 +124,15 @@ FunctionContext executionContext)
                 var response = req.CreateResponse(HttpStatusCode.TooManyRequests);
                 _logger.LogError(ex.Message);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
-                await response.WriteStringAsync(ex.Message);
+                apiResponseModel.ErrorMessage = ex.Message;
+                await response.WriteAsJsonAsync(apiResponseModel);
                 return response;
             }
             catch (Exception ex)
             {
                 var response = req.CreateResponse(HttpStatusCode.BadRequest);
-                response.Headers.Add("Content-Type", "application/json; charset=utf-8");
-                await response.WriteStringAsync(ex.Message);
+                apiResponseModel.ErrorMessage = ex.Message;
+                await response.WriteAsJsonAsync(apiResponseModel);
                 return response;
             }
         }

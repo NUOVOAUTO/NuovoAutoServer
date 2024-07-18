@@ -112,6 +112,7 @@ namespace NuovoAutoServer.Tests.IntergrationTests
 
         [Fact]
         public async Task SendEmailNotification()
+
         {
             var recipients = new EmailRecipients
             {
@@ -123,11 +124,18 @@ namespace NuovoAutoServer.Tests.IntergrationTests
                 FullName = "Hari Krish",
                 VinNumber = "1234567890",
                 StateCode = "CA",
-                Zipcode = "90001"
+                Zipcode = "90001",
+                VehicleEnquiryDetails = new VehicleEnquiryDetails
+                {
+                    Model = "Accord",
+                    Make = "Honda",
+                    Year = "2023",
+                    Features= new string[] {"ABS","Sunroof"}.ToList()
+                }
             };
 
             // Act
-            await _service.SendEmailAsync(recipients, "VehicleEnquiry", model);
+            await _service.SendEmailAsync(recipients, "VehicleEnquiry", new object[] { model, model.VehicleEnquiryDetails });
 
             // Assert
             // Here we would typically assert that the email was sent correctly.

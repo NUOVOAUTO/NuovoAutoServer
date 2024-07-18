@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 using NuovoAutoServer.Model;
 using NuovoAutoServer.Services;
@@ -108,15 +109,8 @@ namespace NuovoAutoServer.Api
                 var (vehicleEnquiries, totalRecords) = await _vehicleEnquiryService.GetPaginatedAsync(start, pageSize);
 
                 var response = req.CreateResponse(HttpStatusCode.OK);
-                response.Headers.Add("Content-Type", "application/json; charset=utf-8");
-
-                var result = new
-                {
-                    totalRecords,
-                    data = vehicleEnquiries
-                };
-                var json = JsonConvert.SerializeObject(result);
-                await response.WriteStringAsync(json);
+                //response.Headers.Add("Content-Type", "application/json; charset=utf-8");
+                await response.WriteAsJsonAsync(vehicleEnquiries.ToList());
                 return response;
             }
             catch (Exception ex)

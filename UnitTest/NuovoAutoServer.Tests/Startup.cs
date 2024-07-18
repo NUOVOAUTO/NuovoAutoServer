@@ -1,4 +1,5 @@
 ﻿using Microsoft.ApplicationInsights;
+using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -38,6 +39,14 @@ namespace NuovoAutoServer.Tests
             var appSettings = configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettings);
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings")); // Configure EmailSettings
+
+
+            services.AddAzureClients(builder =>
+            {
+                var sbcs = "";
+                builder.AddServiceBusAdministrationClient(sbcs);
+                builder.AddServiceBusClient(sbcs);
+            });
 
             services.RegisterAll();
         }

@@ -1,5 +1,6 @@
 using Microsoft.ApplicationInsights;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -38,6 +39,13 @@ var host = new HostBuilder()
             jsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
             // override the default value
             jsonSerializerOptions.PropertyNameCaseInsensitive = false;
+        });
+
+        services.AddAzureClients(builder =>
+        {
+            var sbcs = configuration.GetValue<string>("ServiceBusConnection");
+            builder.AddServiceBusAdministrationClient(sbcs);
+            builder.AddServiceBusClient(sbcs);
         });
 
         services.RegisterAll();

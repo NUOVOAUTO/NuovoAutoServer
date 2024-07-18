@@ -13,9 +13,12 @@ using NuovoAutoServer.Shared;
 
 using Polly;
 
+using Rest.ApiClient.Model;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -62,7 +65,7 @@ namespace NuovoAutoServer.Services
                 }
 
                 var vinDetails = await GetVinDetailsByVinFromDB(freshDetails.Vin);
-               
+
                 if (vinDetails == null)
                 {
                     VehicleDetails? freshVinDetails = null;
@@ -94,12 +97,31 @@ namespace NuovoAutoServer.Services
             if (isExpired || vehicleDetails == null)
             {
                 _logger.LogInformation("Fetching fresh details from API for VIN: {0}", vinNumber);
-                var freshDetails = await _retryHandler.ExponentialRetry(async () => await _vehicleDetailsApiProvider.GetByVinNumber(vinNumber), "VehicleDetailsService.GetByVinNumber");
+                VehicleDetails freshDetails = null;
+                try
+                {
+                    freshDetails = await _retryHandler.ExponentialRetry(async () => await _vehicleDetailsApiProvider.GetByVinNumber(vinNumber), "VehicleDetailsService.GetByVinNumber");
+                }
+                catch (HttpRequestException ex)
+                {
+                    _logger.LogError(ex, ex.Message);
+                    if (ex.StatusCode == HttpStatusCode.BadRequest)
+                    {
+                        string message = String.Format("Failed to fetch the records for VIN: {0}", vinNumber);
+                        _logger.LogError(message);
+                        throw new Exception("Invalid VIN");
+                    }
+                    else
+                    {
+                        string message = String.Format("Failed to fetch the records for VIN: {0}", vinNumber);
+                        throw new Exception(message);
+                    }
+                }
 
                 if (freshDetails == null)
                 {
-                    string message = String.Format("Not able to fetch details from API for VIN: {0}", vinNumber);
-                    _logger.LogWarning(message);
+                    string message = String.Format("Failed to fetch the records for VIN: {0}", vinNumber);
+                    _logger.LogError(message);
                     throw new Exception("Invalid VIN number");
                 }
 

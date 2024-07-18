@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
+using Newtonsoft.Json;
+
 using NuovoAutoServer.Model;
 using NuovoAutoServer.Repository.DBContext;
 using NuovoAutoServer.Repository.Repository;
@@ -14,6 +16,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace NuovoAutoServer.Services
@@ -24,18 +27,34 @@ namespace NuovoAutoServer.Services
         private readonly ILogger _logger;
         private readonly AppSettings _appSettings;
         private readonly EmailNotificationService _emailNotificationService;
+        private readonly AzureServiceBusClient _serviceBusClient;
+        private readonly JsonSerializerOptions _jsonSerializerOptions;
 
-        public VehicleEnquiryServiceSQL(TelemetryClient telemetryClient, ILoggerFactory loggerFactory, IOptions<AppSettings> appSettings, EmailNotificationService emailNotificationService)
+        public VehicleEnquiryServiceSQL(TelemetryClient telemetryClient, ILoggerFactory loggerFactory, IOptions<AppSettings> appSettings, EmailNotificationService emailNotificationService, AzureServiceBusClient serviceBusClient, IOptions<JsonSerializerOptions> jsonSerializerOptions)
         {
             _telemetryClient = telemetryClient;
             _logger = loggerFactory.CreateLogger<VehicleDetailsService>();
             _appSettings = appSettings.Value;
             _emailNotificationService = emailNotificationService;
+            _serviceBusClient = serviceBusClient;
+            _jsonSerializerOptions = jsonSerializerOptions.Value;
         }
 
-        public Task<(IEnumerable<VehicleEnquiry> Items, int TotalCount)> GetPaginatedAsync(int start, int pageSize)
+        public async Task<(IEnumerable<VehicleEnquiry> Items, int TotalCount)> GetPaginatedAsync(int start, int pageSize)
         {
-            throw new NotImplementedException();
+            var totalCount = -1;
+            IEnumerable<VehicleEnquiry> items = null;
+            using (var context = new SqlDbContext())
+            {
+                var query = context.VehicleEnquiry.Include(x => x.VehicleEnquiryDetails).AsQueryable().AsSplitQuery();
+                //var totalCount = await query.CountAsync();
+               
+                items = await query.OrderByDescending(v => v.SubmittedOn)
+                                          .Skip(start)
+                                          .Take(pageSize)
+                                          .ToListAsync();
+            }
+            return (items, totalCount);
         }
 
         public async Task SaveVehicleEnquiry(VehicleEnquiry vehicleEnquiry)
@@ -45,6 +64,17 @@ namespace NuovoAutoServer.Services
                 if (vehicleEnquiry.Id == null)
                 {
                     await context.VehicleEnquiry.AddAsync(vehicleEnquiry);
+
+                    try
+                    {
+                        var messageBody = System.Text.Json.JsonSerializer.Serialize(vehicleEnquiry, _jsonSerializerOptions);
+                        await _serviceBusClient.SendMessageAsync(messageBody);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError("Failed to send email: SendEmailAsync");
+                        _logger.LogError(ex, ex.Message);
+                    }
                 }
                 else
                 {

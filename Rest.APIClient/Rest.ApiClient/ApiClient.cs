@@ -35,14 +35,14 @@ namespace Rest.ApiClient
             catch (Exception ex)
             {
                 var errorMessage = await response.Content.ReadAsStringAsync();
-                var rem = new ApiClientErrorModel()
-                {
-                    StatusCode = response.StatusCode,
-                    Message = errorMessage != null && errorMessage.StartsWith('{') && errorMessage.EndsWith('}') ? JsonSerializer.Deserialize<object>(errorMessage) : errorMessage,
-                    Description = "The dependent API failed with Status code:" + response.StatusCode,
-                    ReasonPhrase = response.ReasonPhrase
-                };
-                throw new HttpRequestException(HttpRequestError.InvalidResponse, JsonSerializer.Serialize(rem), ex, response.StatusCode);
+                //var rem = new ApiClientErrorModel()
+                //{
+                //    StatusCode = response.StatusCode,
+                //    Message = errorMessage != null && errorMessage.StartsWith('{') && errorMessage.EndsWith('}') ? JsonSerializer.Deserialize<object>(errorMessage) : errorMessage,
+                //    Description = "The dependent API failed with Status code:" + response.StatusCode,
+                //    ReasonPhrase = response.ReasonPhrase
+                //};
+                throw new HttpRequestException(HttpRequestError.InvalidResponse, errorMessage, ex, response.StatusCode);
             }
             return response;
         }

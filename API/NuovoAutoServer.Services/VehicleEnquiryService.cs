@@ -80,7 +80,7 @@ namespace NuovoAutoServer.Services
             await _emailNotificationService.SendEmailAsync(
                 recipients,
                 "VehicleEnquiry",
-                vehicleEnquiry);
+                new object[] { vehicleEnquiry, vehicleEnquiry.VehicleEnquiryDetails });
         }
 
         public async Task SaveVehicleEnquiryBulk(List<VehicleEnquiry> vehicleEnquiries)

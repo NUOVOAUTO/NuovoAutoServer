@@ -14,6 +14,7 @@ using Rest.ApiClient.Auth;
 using Microsoft.Extensions.Options;
 using NuovoAutoServer.Shared;
 using NuovoAutoServer.Services.EmailNotification;
+using Azure.Messaging.ServiceBus.Administration;
 
 
 namespace NuovoAutoServer.Api.Extensions
@@ -33,6 +34,7 @@ namespace NuovoAutoServer.Api.Extensions
             services.AddTransient<EmailNotificationService>();
             services.AddSingleton<SecurityService>();
             services.AddSingleton<RetryHandler>();
+            services.AddSingleton<AzureServiceBusClient>();
             services.AddTransient<IVehicleDetailsApiProvider, VehicleDatabaseApiProvider>();
 
             using (var scope = serviceProvider.CreateScope())
@@ -42,6 +44,14 @@ namespace NuovoAutoServer.Api.Extensions
                 services.AddSingleton(x => new CustomAuthenticationHeaderProvider("x-AuthKey", authKey));
             }
             services.RegisterApiClient();
+
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var serviceBusAdminClient = scope.ServiceProvider.GetRequiredService<ServiceBusAdministrationClient>();
+                var azureServiceBusClient = new AzureServiceBusClient(null, serviceBusAdminClient);
+                Task.Run( async () => await azureServiceBusClient.InitializeQueueAsync()).Wait();
+                Console.WriteLine("Service Bus Queue Initialized");
+            }
         }
     }
 }

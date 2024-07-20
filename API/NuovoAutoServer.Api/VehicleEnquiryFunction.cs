@@ -28,31 +28,42 @@ namespace NuovoAutoServer.Api
         [Function("SaveVehicleEnquiry")]
         public async Task<HttpResponseData> SaveVehicleEnquiry([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData req, [FromBody] VehicleEnquiry vehicleEnquiry)
         {
+            ApiResponseModel apiResponseModel = new();
+           
             try
             {
                 string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
                 await _vehicleEnquiryService.SaveVehicleEnquiry(vehicleEnquiry);
 
+                apiResponseModel.Data = vehicleEnquiry;
+                apiResponseModel.IsSuccess = true;
+
                 var response = req.CreateResponse(HttpStatusCode.OK);
-                await response.WriteAsJsonAsync(vehicleEnquiry);
+                response.Headers.Add("Content-Type", "application/json; charset=utf-8");
+                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
                 return response;
             }
             catch (DbUpdateException ex)
             {
                 _logger.LogError(ex, ex.Message);
-                var response = req.CreateResponse(HttpStatusCode.BadRequest);
-                if (ex.InnerException is Microsoft.Azure.Cosmos.CosmosException cosmosEx)
-                    await response.WriteStringAsync(cosmosEx.ResponseBody);
-                else
-                    await response.WriteStringAsync(ex.InnerException?.Message ?? ex.Message);
 
+                var response = req.CreateResponse(HttpStatusCode.BadRequest);
+                response.Headers.Add("Content-Type", "application/json; charset=utf-8");
+                if (ex.InnerException is Microsoft.Azure.Cosmos.CosmosException cosmosEx)
+                    apiResponseModel.ErrorMessage = cosmosEx.ResponseBody;
+                else
+                    apiResponseModel.ErrorMessage = ex.InnerException?.Message ?? ex.Message;
+
+                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
                 return response;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
                 var response = req.CreateResponse(HttpStatusCode.BadRequest);
-                await response.WriteStringAsync(ex.Message);
+                apiResponseModel.ErrorMessage = ex.Message;
+                apiResponseModel.IsSuccess = true;
+                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
                 return response;
             }
         }
@@ -60,31 +71,43 @@ namespace NuovoAutoServer.Api
         [Function("GetVehicleEnquiry")]
         public async Task<HttpResponseData> GetVehicleEnquiry([HttpTrigger(AuthorizationLevel.Function, "Get", Route = "VehicleEnquiry/{id}")] HttpRequestData req, Guid id)
         {
+            ApiResponseModel apiResponseModel = new();
+
             try
             {
                 string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
                 var ve = await _vehicleEnquiryService.GetVehicleEnquiry(id);
 
+                apiResponseModel.Data = ve;
+                apiResponseModel.IsSuccess = true;
+
                 var response = req.CreateResponse(HttpStatusCode.OK);
-                await response.WriteAsJsonAsync(ve);
+                response.Headers.Add("Content-Type", "application/json; charset=utf-8");
+                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
                 return response;
             }
             catch (DbUpdateException ex)
             {
                 _logger.LogError(ex, ex.Message);
-                var response = req.CreateResponse(HttpStatusCode.BadRequest);
-                if (ex.InnerException is Microsoft.Azure.Cosmos.CosmosException cosmosEx)
-                    await response.WriteStringAsync(cosmosEx.ResponseBody);
-                else
-                    await response.WriteStringAsync(ex.InnerException?.Message ?? ex.Message);
 
+                var response = req.CreateResponse(HttpStatusCode.BadRequest);
+                response.Headers.Add("Content-Type", "application/json; charset=utf-8");
+
+                if (ex.InnerException is Microsoft.Azure.Cosmos.CosmosException cosmosEx)
+                    apiResponseModel.ErrorMessage = cosmosEx.ResponseBody;
+                else
+                    apiResponseModel.ErrorMessage = ex.InnerException?.Message ?? ex.Message;
+
+                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
                 return response;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
                 var response = req.CreateResponse(HttpStatusCode.BadRequest);
-                await response.WriteStringAsync(ex.Message);
+                response.Headers.Add("Content-Type", "application/json; charset=utf-8");
+                apiResponseModel.ErrorMessage = ex.Message;
+                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
                 return response;
             }
         }
@@ -93,6 +116,7 @@ namespace NuovoAutoServer.Api
         [Function("GetAllVehicleEnquiries")]
         public async Task<HttpResponseData> GetAllVehicleEnquiries([HttpTrigger(AuthorizationLevel.Function, "get", Route = "VehicleEnquiries")] HttpRequestData req)
         {
+            ApiResponseModel apiResponseModel = new();
             try
             {
                 int start = int.Parse(req.Query["start"] ?? "0");
@@ -108,15 +132,20 @@ namespace NuovoAutoServer.Api
 
                 var (vehicleEnquiries, totalRecords) = await _vehicleEnquiryService.GetPaginatedAsync(start, pageSize);
 
+                apiResponseModel.Data = vehicleEnquiries;
+                apiResponseModel.IsSuccess = true;
+
                 var response = req.CreateResponse(HttpStatusCode.OK);
-                //response.Headers.Add("Content-Type", "application/json; charset=utf-8");
-                await response.WriteAsJsonAsync(vehicleEnquiries.ToList());
+                response.Headers.Add("Content-Type", "application/json; charset=utf-8");
+                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
                 return response;
             }
             catch (Exception ex)
             {
                 var response = req.CreateResponse(HttpStatusCode.BadRequest);
-                await response.WriteStringAsync(ex.Message);
+                response.Headers.Add("Content-Type", "application/json; charset=utf-8");
+                apiResponseModel.ErrorMessage = ex.Message;
+                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
                 return response;
             }
         }

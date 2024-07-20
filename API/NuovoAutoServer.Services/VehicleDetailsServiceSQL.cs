@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -48,14 +49,33 @@ namespace NuovoAutoServer.Services
 
         public async Task<VehicleDetails> GetByTagNumber(string tagNumber, string state)
         {
-            VehicleDetails? vehicleDetails = await GetVinDetailsByTagFromDB(tagNumber);
+            VehicleDetails? vehicleDetails = await GetVinDetailsByTagFromDB(tagNumber, state);
 
             bool isExpired = vehicleDetails != null && IsExpired(vehicleDetails.LastUpdatedDateTime);
             _logger.LogInformation("Vehicle details expired: {IsExpired}", isExpired);
 
             if (isExpired || vehicleDetails == null)
             {
-                var freshDetails = await _retryHandler.ExponentialRetry(async () => await _vehicleDetailsApiProvider.GetByTagNumber(tagNumber, state), "VehicleDetailsService.GetByTagNumber");
+                VehicleDetails? freshDetails = null;
+                try
+                {
+                    freshDetails = await _retryHandler.ExponentialRetry(async () => await _vehicleDetailsApiProvider.GetByTagNumber(tagNumber, state), "VehicleDetailsService.GetByTagNumber");
+                }
+                catch (HttpRequestException ex)
+                {
+                    _logger.LogError(ex, ex.Message);
+                    string errorMessage = String.Format("Failed to fetch the records for License Number: {0}", tagNumber);
+                    if (ex.StatusCode == HttpStatusCode.BadRequest)
+                    {
+                        _logger.LogError(errorMessage);
+                        throw new Exception("Invalid License Number and State");
+                    }
+                    else
+                    {
+                        throw new Exception(errorMessage);
+                    }
+                }
+
 
                 if (freshDetails == null)
                 {
@@ -97,7 +117,7 @@ namespace NuovoAutoServer.Services
             if (isExpired || vehicleDetails == null)
             {
                 _logger.LogInformation("Fetching fresh details from API for VIN: {0}", vinNumber);
-                VehicleDetails freshDetails = null;
+                VehicleDetails? freshDetails = null;
                 try
                 {
                     freshDetails = await _retryHandler.ExponentialRetry(async () => await _vehicleDetailsApiProvider.GetByVinNumber(vinNumber), "VehicleDetailsService.GetByVinNumber");
@@ -133,13 +153,14 @@ namespace NuovoAutoServer.Services
         }
 
 
-        private static async Task<VehicleDetails?> GetVinDetailsByTagFromDB(string tagNumber)
+        private static async Task<VehicleDetails?> GetVinDetailsByTagFromDB(string tagNumber, string state)
         {
             string jsonResult;
 
             Dictionary<string, object> parameters = new Dictionary<string, object>()
                 {
-                    {"@LicenseNumber", tagNumber}
+                    {"@LicenseNumber", tagNumber},
+                    {"@StateCode", state}
                 };
 
             // Execute the stored procedure

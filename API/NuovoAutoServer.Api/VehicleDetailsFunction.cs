@@ -37,10 +37,20 @@ namespace NuovoAutoServer.Api
         {
             _logger.LogInformation("C# HTTP trigger function processed a request.");
 
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            await response.WriteAsJsonAsync(new { });
+            try
+            {
+                var response = req.CreateResponse(HttpStatusCode.ExpectationFailed);
+                await response.WriteStringAsync(JsonConvert.SerializeObject(new { }));
 
-            return response;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                var response = req.CreateResponse(HttpStatusCode.ExpectationFailed);
+                await response.WriteStringAsync(JsonConvert.SerializeObject(new { ErrorMessage = ex.Message }));
+
+                return response;
+            }
         }
 
         [Function("GetByTagNumber")]
@@ -48,6 +58,7 @@ namespace NuovoAutoServer.Api
         Route = "VehicleDetails/searchByTagNumber/{tag}/{state}")] HttpRequestData req, string tag, string state,
 FunctionContext executionContext)
         {
+            ApiResponseModel apiResponseModel = new();
             try
             {
                 _securityService.ValidateClientIp(req);
@@ -59,32 +70,36 @@ FunctionContext executionContext)
                 var response = req.CreateResponse(HttpStatusCode.OK);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
 
-                var json = JsonConvert.SerializeObject(vd);
-                await response.WriteStringAsync(json);
+                apiResponseModel.Data = vd;
+                apiResponseModel.IsSuccess = true;
+                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
                 return response;
             }
             catch (IPNotFoundException ex)
             {
                 var response = req.CreateResponse(HttpStatusCode.Forbidden);
-                _logger.LogError(ex.Message);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
-                await response.WriteStringAsync("Invalid IP Address");
+                _logger.LogError(ex.Message);
+                //response.Headers.Add("Content-Type", "application/json; charset=utf-8");
+                apiResponseModel.ErrorMessage = ex.Message;
+                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
                 return response;
             }
             catch (RateLimitExceededException ex)
             {
                 var response = req.CreateResponse(HttpStatusCode.TooManyRequests);
-                _logger.LogError(ex.Message);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
-                await response.WriteStringAsync(ex.Message);
+                _logger.LogError(ex.Message);
+                apiResponseModel.ErrorMessage = ex.Message;
+                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
                 return response;
             }
             catch (Exception ex)
             {
                 var response = req.CreateResponse(HttpStatusCode.BadRequest);
-                _logger.LogError(ex, ex.Message);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
-                await response.WriteStringAsync(ex.Message);
+                apiResponseModel.ErrorMessage = ex.Message;
+                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
                 return response;
             }
         }
@@ -106,33 +121,35 @@ FunctionContext executionContext)
                 var response = req.CreateResponse(HttpStatusCode.OK);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
 
-                var json = JsonConvert.SerializeObject(vd);
-                await response.WriteStringAsync(json);
+                apiResponseModel.Data = vd;
+                apiResponseModel.IsSuccess = true;
+                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
                 return response;
             }
             catch (IPNotFoundException ex)
             {
                 var response = req.CreateResponse(HttpStatusCode.Forbidden);
-                _logger.LogError(ex.Message);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
+                _logger.LogError(ex.Message);
                 apiResponseModel.ErrorMessage = ex.Message;
-                await response.WriteAsJsonAsync(apiResponseModel);
+                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
                 return response;
             }
             catch (RateLimitExceededException ex)
             {
                 var response = req.CreateResponse(HttpStatusCode.TooManyRequests);
-                _logger.LogError(ex.Message);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
+                _logger.LogError(ex.Message);
                 apiResponseModel.ErrorMessage = ex.Message;
-                await response.WriteAsJsonAsync(apiResponseModel);
+                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
                 return response;
             }
             catch (Exception ex)
             {
                 var response = req.CreateResponse(HttpStatusCode.BadRequest);
+                response.Headers.Add("Content-Type", "application/json; charset=utf-8");
                 apiResponseModel.ErrorMessage = ex.Message;
-                await response.WriteAsJsonAsync(apiResponseModel);
+                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
                 return response;
             }
         }

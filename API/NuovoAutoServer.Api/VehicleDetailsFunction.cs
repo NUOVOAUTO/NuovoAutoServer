@@ -127,7 +127,7 @@ FunctionContext executionContext)
 
                 apiResponseModel.Data = vd;
                 apiResponseModel.IsSuccess = true;
-                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
+                await response.WriteStringAsync(apiResponseModel.ToJsonString());
                 return response;
             }
             catch (IPNotFoundException ex)
@@ -136,7 +136,7 @@ FunctionContext executionContext)
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
                 _logger.LogError(ex.Message);
                 apiResponseModel.ErrorMessage = ex.Message;
-                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
+                await response.WriteStringAsync(apiResponseModel.ToJsonString());
                 return response;
             }
             catch (RateLimitExceededException ex)
@@ -145,7 +145,7 @@ FunctionContext executionContext)
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
                 _logger.LogError(ex.Message);
                 apiResponseModel.ErrorMessage = ex.Message;
-                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
+                await response.WriteStringAsync(apiResponseModel.ToJsonString());
                 return response;
             }
             catch (Exception ex)
@@ -153,7 +153,7 @@ FunctionContext executionContext)
                 var response = req.CreateResponse(HttpStatusCode.BadRequest);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
                 apiResponseModel.ErrorMessage = ex.Message;
-                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
+                await response.WriteStringAsync(apiResponseModel.ToJsonString());
                 return response;
             }
         }

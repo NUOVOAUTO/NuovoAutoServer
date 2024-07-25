@@ -3,6 +3,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -18,17 +19,19 @@ namespace NuovoAutoServer.Api
     {
         private readonly ILogger<VehicleEnquiryFunction> _logger;
         private readonly VehicleEnquiryServiceSQL _vehicleEnquiryService;
+        private readonly JsonSerializerSettings _jsonSerializerSettings;
 
-        public VehicleEnquiryFunction(ILogger<VehicleEnquiryFunction> logger, VehicleEnquiryServiceSQL vehicleEnquiryService)
+        public VehicleEnquiryFunction(ILogger<VehicleEnquiryFunction> logger, VehicleEnquiryServiceSQL vehicleEnquiryService, IOptions<JsonSerializerSettings> jsonSerializerSettings)
         {
             _logger = logger;
             _vehicleEnquiryService = vehicleEnquiryService;
+            _jsonSerializerSettings = jsonSerializerSettings.Value;
         }
 
         [Function("SaveVehicleEnquiry")]
-        public async Task<HttpResponseData> SaveVehicleEnquiry([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData req, [FromBody] VehicleEnquiry vehicleEnquiry)
+        public async Task<HttpResponseData> SaveVehicleEnquiry([HttpTrigger(AuthorizationLevel.Function, "post", Route = "SaveVehicleEnquiry")] HttpRequestData req, [FromBody] VehicleEnquiry vehicleEnquiry)
         {
-            ApiResponseModel apiResponseModel = new();
+            ApiResponseModel apiResponseModel = new(_jsonSerializerSettings);
            
             try
             {
@@ -40,7 +43,7 @@ namespace NuovoAutoServer.Api
 
                 var response = req.CreateResponse(HttpStatusCode.OK);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
-                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
+                await response.WriteStringAsync(apiResponseModel.ToJsonString());
                 return response;
             }
             catch (DbUpdateException ex)
@@ -50,11 +53,12 @@ namespace NuovoAutoServer.Api
                 var response = req.CreateResponse(HttpStatusCode.BadRequest);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
                 if (ex.InnerException is Microsoft.Azure.Cosmos.CosmosException cosmosEx)
-                    apiResponseModel.ErrorMessage = cosmosEx.ResponseBody;
-                else
-                    apiResponseModel.ErrorMessage = ex.InnerException?.Message ?? ex.Message;
+                {
+                    _logger.LogError(cosmosEx.ResponseBody);
+                }
 
-                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
+                apiResponseModel.ErrorMessage = "Failed to update the details. Please verify the data.";
+                await response.WriteStringAsync(apiResponseModel.ToJsonString());
                 return response;
             }
             catch (Exception ex)
@@ -63,7 +67,51 @@ namespace NuovoAutoServer.Api
                 var response = req.CreateResponse(HttpStatusCode.BadRequest);
                 apiResponseModel.ErrorMessage = ex.Message;
                 apiResponseModel.IsSuccess = true;
-                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
+                await response.WriteStringAsync(apiResponseModel.ToJsonString());
+                return response;
+            }
+        }
+
+        [Function("UpdateVehicleEnquiryStatus")]
+        public async Task<HttpResponseData> UpdateVehicleEnquiry([HttpTrigger(AuthorizationLevel.Function, "patch", Route = "UpdateVehicleEnquiryStatus")] HttpRequestData req, [FromBody] VehicleEnquiry vehicleEnquiry)
+        {
+            ApiResponseModel apiResponseModel = new(_jsonSerializerSettings);
+
+            try
+            {
+                string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+                await _vehicleEnquiryService.UpdateVehicleEnquiry(vehicleEnquiry);
+
+                apiResponseModel.Data = vehicleEnquiry;
+                apiResponseModel.IsSuccess = true;
+
+                var response = req.CreateResponse(HttpStatusCode.OK);
+                response.Headers.Add("Content-Type", "application/json; charset=utf-8");
+                await response.WriteStringAsync(apiResponseModel.ToJsonString());
+                return response;
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, ex.Message);
+
+                var response = req.CreateResponse(HttpStatusCode.BadRequest);
+                response.Headers.Add("Content-Type", "application/json; charset=utf-8");
+                if (ex.InnerException is Microsoft.Azure.Cosmos.CosmosException cosmosEx)
+                {
+                    _logger.LogError(cosmosEx.ResponseBody);
+                }
+
+                apiResponseModel.ErrorMessage = "Failed to update the details. Please verify the data.";
+                await response.WriteStringAsync(apiResponseModel.ToJsonString());
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                var response = req.CreateResponse(HttpStatusCode.BadRequest);
+                apiResponseModel.ErrorMessage = ex.Message;
+                apiResponseModel.IsSuccess = true;
+                await response.WriteStringAsync(apiResponseModel.ToJsonString());
                 return response;
             }
         }
@@ -71,7 +119,7 @@ namespace NuovoAutoServer.Api
         [Function("GetVehicleEnquiry")]
         public async Task<HttpResponseData> GetVehicleEnquiry([HttpTrigger(AuthorizationLevel.Function, "Get", Route = "VehicleEnquiry/{id}")] HttpRequestData req, Guid id)
         {
-            ApiResponseModel apiResponseModel = new();
+            ApiResponseModel apiResponseModel = new(_jsonSerializerSettings);
 
             try
             {
@@ -83,7 +131,7 @@ namespace NuovoAutoServer.Api
 
                 var response = req.CreateResponse(HttpStatusCode.OK);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
-                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
+                await response.WriteStringAsync(apiResponseModel.ToJsonString());
                 return response;
             }
             catch (DbUpdateException ex)
@@ -98,7 +146,7 @@ namespace NuovoAutoServer.Api
                 else
                     apiResponseModel.ErrorMessage = ex.InnerException?.Message ?? ex.Message;
 
-                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
+                await response.WriteStringAsync(apiResponseModel.ToJsonString());
                 return response;
             }
             catch (Exception ex)
@@ -107,7 +155,7 @@ namespace NuovoAutoServer.Api
                 var response = req.CreateResponse(HttpStatusCode.BadRequest);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
                 apiResponseModel.ErrorMessage = ex.Message;
-                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
+                await response.WriteStringAsync(apiResponseModel.ToJsonString());
                 return response;
             }
         }
@@ -116,7 +164,7 @@ namespace NuovoAutoServer.Api
         [Function("GetAllVehicleEnquiries")]
         public async Task<HttpResponseData> GetAllVehicleEnquiries([HttpTrigger(AuthorizationLevel.Function, "get", Route = "VehicleEnquiries")] HttpRequestData req)
         {
-            ApiResponseModel apiResponseModel = new();
+            ApiResponseModel apiResponseModel = new(_jsonSerializerSettings);
             try
             {
                 int start = int.Parse(req.Query["start"] ?? "0");
@@ -137,7 +185,7 @@ namespace NuovoAutoServer.Api
 
                 var response = req.CreateResponse(HttpStatusCode.OK);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
-                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
+                await response.WriteStringAsync(apiResponseModel.ToJsonString());
                 return response;
             }
             catch (Exception ex)
@@ -145,7 +193,7 @@ namespace NuovoAutoServer.Api
                 var response = req.CreateResponse(HttpStatusCode.BadRequest);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
                 apiResponseModel.ErrorMessage = ex.Message;
-                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
+                await response.WriteStringAsync(apiResponseModel.ToJsonString());
                 return response;
             }
         }

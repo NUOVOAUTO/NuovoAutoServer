@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -23,13 +24,16 @@ namespace NuovoAutoServer.Api
         private readonly VehicleDetailsServiceSQL _vehicleDetailsService;
         private readonly SecurityService _securityService; // Added SecurityService
         private readonly RetryHandler _retryHandler; // Added RetryHandler
+        private readonly JsonSerializerSettings _jsonSerializerSettings;
 
-        public VehicleDetailsFunction(ILoggerFactory loggerFactory, VehicleDetailsServiceSQL vehicleDetialsService, SecurityService securityService, RetryHandler retryHandler) // Injected SecurityService and RetryHandler
+
+        public VehicleDetailsFunction(ILoggerFactory loggerFactory, VehicleDetailsServiceSQL vehicleDetialsService, SecurityService securityService, RetryHandler retryHandler, IOptions<JsonSerializerSettings> jsonSerializerSettings) // Injected SecurityService and RetryHandler
         {
             _logger = loggerFactory.CreateLogger<VehicleDetailsFunction>();
             _vehicleDetailsService = vehicleDetialsService;
             _securityService = securityService; // Assigned injected SecurityService
             _retryHandler = retryHandler; // Assigned injected RetryHandler
+            _jsonSerializerSettings = jsonSerializerSettings.Value;
         }
 
         [Function("Function1")]
@@ -58,7 +62,7 @@ namespace NuovoAutoServer.Api
         Route = "VehicleDetails/searchByTagNumber/{tag}/{state}")] HttpRequestData req, string tag, string state,
 FunctionContext executionContext)
         {
-            ApiResponseModel apiResponseModel = new();
+            ApiResponseModel apiResponseModel = new(_jsonSerializerSettings);
             try
             {
                 _securityService.ValidateClientIp(req);
@@ -72,7 +76,7 @@ FunctionContext executionContext)
 
                 apiResponseModel.Data = vd;
                 apiResponseModel.IsSuccess = true;
-                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
+                await response.WriteStringAsync(apiResponseModel.ToJsonString());
                 return response;
             }
             catch (IPNotFoundException ex)
@@ -80,9 +84,9 @@ FunctionContext executionContext)
                 var response = req.CreateResponse(HttpStatusCode.Forbidden);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
                 _logger.LogError(ex.Message);
-                //response.Headers.Add("Content-Type", "application/json; charset=utf-8");
+                response.Headers.Add("Content-Type", "application/json; charset=utf-8");
                 apiResponseModel.ErrorMessage = ex.Message;
-                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
+                await response.WriteStringAsync(apiResponseModel.ToJsonString());
                 return response;
             }
             catch (RateLimitExceededException ex)
@@ -91,7 +95,7 @@ FunctionContext executionContext)
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
                 _logger.LogError(ex.Message);
                 apiResponseModel.ErrorMessage = ex.Message;
-                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
+                await response.WriteStringAsync(apiResponseModel.ToJsonString());
                 return response;
             }
             catch (Exception ex)
@@ -99,7 +103,7 @@ FunctionContext executionContext)
                 var response = req.CreateResponse(HttpStatusCode.BadRequest);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
                 apiResponseModel.ErrorMessage = ex.Message;
-                await response.WriteStringAsync(JsonConvert.SerializeObject(apiResponseModel));
+                await response.WriteStringAsync(apiResponseModel.ToJsonString());
                 return response;
             }
         }

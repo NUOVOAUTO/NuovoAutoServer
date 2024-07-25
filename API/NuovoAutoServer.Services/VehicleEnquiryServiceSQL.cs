@@ -87,6 +87,23 @@ namespace NuovoAutoServer.Services
             }
         }
 
+        public async Task UpdateVehicleEnquiry(VehicleEnquiry vehicleEnquiry)
+        {
+            using (var context = new SqlDbContext())
+            {
+                var existingEnquiry = await context.VehicleEnquiry.FindAsync(vehicleEnquiry.Id);
+                if (existingEnquiry != null)
+                {
+                    existingEnquiry.OnChanged();
+
+                    existingEnquiry.EnquiryStatus = vehicleEnquiry.EnquiryStatus;
+                    existingEnquiry.EnquiryComments = vehicleEnquiry.EnquiryComments;
+                    context.VehicleEnquiry.Update(existingEnquiry);
+                    await context.SaveChangesAsync();
+                }
+            }
+        }
+
         public async Task<VehicleEnquiry> GetVehicleEnquiry(Guid id)
         {
             VehicleEnquiry vehicleEnquiry;

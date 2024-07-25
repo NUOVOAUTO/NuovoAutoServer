@@ -5,6 +5,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+using Newtonsoft.Json;
+
 using NuovoAutoServer.Api.Extensions;
 using NuovoAutoServer.Services.EmailNotification;
 using NuovoAutoServer.Shared;
@@ -39,6 +41,15 @@ var host = new HostBuilder()
             jsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
             // override the default value
             jsonSerializerOptions.PropertyNameCaseInsensitive = false;
+        });
+
+        services.Configure<JsonSerializerSettings>(jsonSerializerSettings =>
+        {
+            jsonSerializerSettings.ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver();
+            jsonSerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+            jsonSerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+            // override the default value
+            jsonSerializerSettings.Formatting = Formatting.None;
         });
 
         services.AddAzureClients(builder =>

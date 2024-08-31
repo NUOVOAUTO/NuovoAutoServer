@@ -25,6 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Rest.APIClient", "Rest.APIC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rest.ApiClient", "Rest.APIClient\Rest.ApiClient\Rest.ApiClient.csproj", "{A913F9BD-7941-419F-8486-97DDCE1F5E35}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuovoAutoServer.Admin.Api", "NuovoAutoServer.Admin.Api\NuovoAutoServer.Admin.Api.csproj", "{6DD3F960-A1F6-4B21-A559-459BE09C9C0E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{A913F9BD-7941-419F-8486-97DDCE1F5E35}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A913F9BD-7941-419F-8486-97DDCE1F5E35}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A913F9BD-7941-419F-8486-97DDCE1F5E35}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DD3F960-A1F6-4B21-A559-459BE09C9C0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DD3F960-A1F6-4B21-A559-459BE09C9C0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DD3F960-A1F6-4B21-A559-459BE09C9C0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DD3F960-A1F6-4B21-A559-459BE09C9C0E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -76,6 +82,7 @@ Global
 		{B3547B79-ADFC-4568-8B50-ADC937D2EC72} = {B44FD499-048E-4816-97AA-D7B9B0CD577F}
 		{EB09AFBF-2090-4012-BEF4-7EADFDE2D35B} = {B44FD499-048E-4816-97AA-D7B9B0CD577F}
 		{A913F9BD-7941-419F-8486-97DDCE1F5E35} = {02FB4B65-3CB3-4D9D-BFD6-1E53129DD6AC}
+		{6DD3F960-A1F6-4B21-A559-459BE09C9C0E} = {B44FD499-048E-4816-97AA-D7B9B0CD577F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {162BBC21-88D3-47BC-B8B7-257B9DD2BBEF}

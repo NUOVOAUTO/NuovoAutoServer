@@ -16,22 +16,23 @@ namespace NuovoAutoServer.Services.API_Provider
 {
     public class VehicleDatabaseApiProvider : IVehicleDetailsApiProvider
     {
-        private readonly IApiClient _apiClient;
+        private readonly IApiClient<VehicleDetails> _apiClient;
         private readonly AppSettings _appSettingsOptions;
 
-        public VehicleDatabaseApiProvider(IApiClient apiClient, IOptions<AppSettings> appSettingsOptions)
+        public VehicleDatabaseApiProvider(IApiClient<VehicleDetails> apiClient,  IOptions<AppSettings> appSettingsOptions)
         {
             _apiClient = apiClient;
             _appSettingsOptions = appSettingsOptions.Value;
         }
 
+        //TODO: Configure the _appSettingsOptions.VehicleDatabasesApiProvider.BaseUrl while creating the IApiClient<VehicleDetails> object.
         public async Task<VehicleDetails?> GetByTagNumber(string tagNumber, string state)
         {
             var url = string.Format("{0}/license-decode/{1}/{2}", _appSettingsOptions.VehicleDatabasesApiProvider.BaseUrl, tagNumber, state);
            // url = string.Format("{0}/GetByTagNumber", _appSettingsOptions.VehicleDatabasesApiProvider.BaseUrl);
 
             var httpReq = new HttpRequestMessage(HttpMethod.Get, new Uri(url));
-            var data = await _apiClient.SendAsync(httpReq, AuthenticationKind.CustomAuthenticationHeaderProvider);
+            var data = await _apiClient.SendAsync(httpReq);
             var res = await data.Content.ReadAsStringAsync();
             var jb = JObject.Parse(res);
             var vd = new VehicleDetails(tagNumber, jb["data"]["intro"]["vin"].ToString(), jb["data"] as JObject);
@@ -39,13 +40,14 @@ namespace NuovoAutoServer.Services.API_Provider
             return vd;
         }
 
+        //TODO: Configure the _appSettingsOptions.VehicleDatabasesApiProvider.BaseUrl while creating the IApiClient<VehicleDetails> object.
         public async Task<VehicleDetails> GetByVinNumber(string vinNumber, string tagNumber = "")
         {
             var url = string.Format("{0}/vin-decode/{1}", _appSettingsOptions.VehicleDatabasesApiProvider.BaseUrl, vinNumber);
            // url = string.Format("{0}/GetByVinNumber", _appSettingsOptions.VehicleDatabasesApiProvider.BaseUrl);
 
             var httpReq = new HttpRequestMessage(HttpMethod.Get, new Uri(url));
-            var data = await _apiClient.SendAsync(httpReq, AuthenticationKind.CustomAuthenticationHeaderProvider);
+            var data = await _apiClient.SendAsync(httpReq);
             var res = await data.Content.ReadAsStringAsync();
             var jb = JObject.Parse(res);
             var vd = new VehicleDetails(tagNumber, vinNumber, jb["data"] as JObject);
@@ -56,8 +58,8 @@ namespace NuovoAutoServer.Services.API_Provider
 
     public class DummyApiProvider : IVehicleDetailsApiProvider
     {
-        private readonly IApiClient _apiClient;
-        public DummyApiProvider(IApiClient apiClient)
+        private readonly IApiClient<DummyApiProvider> _apiClient;
+        public DummyApiProvider(IApiClient<DummyApiProvider> apiClient)
         {
             _apiClient = apiClient;
         }

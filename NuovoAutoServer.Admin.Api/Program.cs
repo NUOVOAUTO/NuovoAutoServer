@@ -4,15 +4,16 @@ using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-
 using Newtonsoft.Json;
+using NuovoAutoServer.Admin.Api.Extensions;
 
-using NuovoAutoServer.Api.Extensions;
 using NuovoAutoServer.Services.EmailNotification;
+
 using NuovoAutoServer.Shared;
 
-using System.Text.Json;
 using System.Text.Json.Serialization;
+
+using System.Text.Json;
 
 var host = new HostBuilder()
     .ConfigureFunctionsWorkerDefaults()
@@ -25,7 +26,6 @@ var host = new HostBuilder()
         var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory()) // Set the base path
             .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-            .AddJsonFile("EmailNotification/emailTemplates.json", optional: false, reloadOnChange: true) // Add the correct path to emailTemplates.json
             .AddEnvironmentVariables()
             .Build();
 
@@ -67,3 +67,4 @@ var host = new HostBuilder()
     .Build();
 
 host.Run();
+

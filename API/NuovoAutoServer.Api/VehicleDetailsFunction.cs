@@ -113,7 +113,7 @@ FunctionContext executionContext)
         Route = "VehicleDetails/searchByVinNumber/{vin}")] HttpRequestData req, string vin,
 FunctionContext executionContext)
         {
-            ApiResponseModel apiResponseModel = new ();
+            ApiResponseModel apiResponseModel = new();
             try
             {
                 _securityService.ValidateClientIp(req);

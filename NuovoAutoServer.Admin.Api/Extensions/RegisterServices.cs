@@ -16,9 +16,10 @@ using NuovoAutoServer.Shared;
 using NuovoAutoServer.Services.EmailNotification;
 using Azure.Messaging.ServiceBus.Administration;
 using NuovoAutoServer.Model;
+using NuovoAutoServer.Services.Services;
 
 
-namespace NuovoAutoServer.Api.Extensions
+namespace NuovoAutoServer.Admin.Api.Extensions
 {
     public static class RegisterServices
     {
@@ -28,14 +29,12 @@ namespace NuovoAutoServer.Api.Extensions
 
             services.RegisterRepositories();
 
-            //services.AddTransient<VehicleDetailsService>();
-            //services.AddTransient<VehicleEnquiryService>();
             services.AddTransient<VehicleDetailsServiceSQL>();
             services.AddTransient<VehicleEnquiryServiceSQL>();
             services.AddTransient<EmailNotificationService>();
-            services.AddSingleton<SecurityService>();
             services.AddSingleton<RetryHandler>();
             services.AddSingleton<AzureServiceBusClient>();
+            services.AddSingleton<BlobStorageService>();
             services.AddTransient<IVehicleDetailsApiProvider, VehicleDatabaseApiProvider>();
 
             using (var scope = serviceProvider.CreateScope())
@@ -44,15 +43,14 @@ namespace NuovoAutoServer.Api.Extensions
                 var authKey = appSettings.VehicleDatabasesApiProvider.AuthKey;
 
                 //TODO: Configure the BaseUrl as part of RegisterApiClient.
-                services.RegisterApiClient<VehicleDetails>(new CustomAuthenticationHeaderProvider("x-AuthKey", authKey));
+                
             }
-            
 
             using (var scope = serviceProvider.CreateScope())
             {
                 var serviceBusAdminClient = scope.ServiceProvider.GetRequiredService<ServiceBusAdministrationClient>();
                 var azureServiceBusClient = new AzureServiceBusClient(null, serviceBusAdminClient);
-                Task.Run( async () => await azureServiceBusClient.InitializeQueueAsync()).Wait();
+                Task.Run(async () => await azureServiceBusClient.InitializeQueueAsync()).Wait();
                 Console.WriteLine("Service Bus Queue Initialized");
             }
         }

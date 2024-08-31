@@ -21,11 +21,12 @@
     <PackageReference Include="Microsoft.Identity.Client" Version="4.63.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NuovoAutoServer.Model\NuovoAutoServer.Model.csproj" />
-    <ProjectReference Include="..\NuovoAutoServer.Repository\NuovoAutoServer.Repository.csproj" />
-    <ProjectReference Include="..\NuovoAutoServer.Services\NuovoAutoServer.Services.csproj" />
-    <ProjectReference Include="..\NuovoAutoServer.Shared\NuovoAutoServer.Shared.csproj" />
+    <ProjectReference Include="..\API\NuovoAutoServer.Model\NuovoAutoServer.Model.csproj" />
+    <ProjectReference Include="..\API\NuovoAutoServer.Repository\NuovoAutoServer.Repository.csproj" />
+    <ProjectReference Include="..\API\NuovoAutoServer.Services\NuovoAutoServer.Services.csproj" />
+    <ProjectReference Include="..\API\NuovoAutoServer.Shared\NuovoAutoServer.Shared.csproj" />
   </ItemGroup>
+  
   <ItemGroup>
     <None Update="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

@@ -13,15 +13,13 @@ namespace Rest.ApiClient.Extensions.Registrations
 {
     public static class DependencyRegistration
     {
-        public static void RegisterApiClient(this IServiceCollection services)
+        public static void RegisterApiClient<T>(this IServiceCollection services, IAuthenticationProvider authenticationProvider) where T : class
         {
             var serviceProvider = services.BuildServiceProvider();
             using (var scope = serviceProvider.CreateScope())
             {
-                var azureAdAuthenticationProvider = scope.ServiceProvider.GetService<AzureAdAuthenticationProvider>();
-                var customAuthenticationHeaderProvider = scope.ServiceProvider.GetService<CustomAuthenticationHeaderProvider>();
-
-                services.AddHttpClient<IApiClient, ApiClient>(x=> new ApiClient(x, azureAdAuthenticationProvider, customAuthenticationHeaderProvider))
+                services.AddSingleton(x => authenticationProvider);
+                services.AddHttpClient<IApiClient<T>, ApiClient<T>>(x=> new ApiClient<T>(x, authenticationProvider))
                    .SetHandlerLifetime(TimeSpan.FromMinutes(5)).
                    AddRetryPolicy();
             }

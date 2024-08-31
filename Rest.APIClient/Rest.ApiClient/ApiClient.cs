@@ -6,22 +6,20 @@ using System.Text.Json;
 
 namespace Rest.ApiClient
 {
-    public class ApiClient : IApiClient
+    public class ApiClient<T> : IApiClient<T> where T : class
     {
         private readonly HttpClient _httpClient;
-        private readonly IAuthenticationProvider _azureAdAuthenticationProvider;
-        private readonly IAuthenticationProvider _customAuthenticationHeaderProvider;
+        private readonly IAuthenticationProvider _authenticationProvider;
 
-        public ApiClient(HttpClient httpClient, AzureAdAuthenticationProvider? azureAdAuthenticationProvider, CustomAuthenticationHeaderProvider? customAuthenticationHeaderProvider)
+        public ApiClient(HttpClient httpClient, IAuthenticationProvider authenticationProvider)
         {
             _httpClient = httpClient;
-            _azureAdAuthenticationProvider = azureAdAuthenticationProvider;
-            _customAuthenticationHeaderProvider = customAuthenticationHeaderProvider;
+            _authenticationProvider = authenticationProvider;
         }
 
-        public async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, AuthenticationKind authenticationKind)
+        public async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request)
         {
-            var _authenticationProvider = GetAuthenticationProvider(authenticationKind);
+           // var _authenticationProvider = GetAuthenticationProvider(authenticationKind);
 
             if (_authenticationProvider != null)
             {
@@ -46,17 +44,5 @@ namespace Rest.ApiClient
             }
             return response;
         }
-
-
-        private IAuthenticationProvider? GetAuthenticationProvider(AuthenticationKind authenticationKind)
-        {
-            if (authenticationKind == AuthenticationKind.AzureAdAuthentication)
-                return _azureAdAuthenticationProvider;
-            else if (authenticationKind == AuthenticationKind.CustomAuthenticationHeaderProvider)
-                return _customAuthenticationHeaderProvider;
-
-            return null;
-        }
-
     }
 }

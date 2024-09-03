@@ -22,35 +22,35 @@ namespace NuovoAutoServer.Repository.Registrations
     {
         public static void RegisterRepositories(this IServiceCollection services)
         {
-            services.AddDBContext();
-            services.AddTransient<IGenericRepository<CosmosDBContext>,  CosmosDbEFRepository>();
+            //services.AddDBContext();
+            //services.AddTransient<IGenericRepository<CosmosDBContext>,  CosmosDbEFRepository>();
         }
 
-        private static void AddDBContext(this IServiceCollection services)
-        {
-            var serviceProvider = services.BuildServiceProvider();
-            using (var scope = serviceProvider.CreateScope())
-            {
-                var appSettings = scope.ServiceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
-                //services.AddDbContext<SqlDbContext>(options => options.UseSqlServer(appSettings.connectionStrings.SqlDbConnection, b => {
-                //    b.MigrationsAssembly("MCAuditPro.Repositories");
-                //    b.CommandTimeout(3);
-                //}));
+        //private static void AddDBContext(this IServiceCollection services)
+        //{
+        //    var serviceProvider = services.BuildServiceProvider();
+        //    using (var scope = serviceProvider.CreateScope())
+        //    {
+        //        var appSettings = scope.ServiceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
+        //        //services.AddDbContext<SqlDbContext>(options => options.UseSqlServer(appSettings.connectionStrings.SqlDbConnection, b => {
+        //        //    b.MigrationsAssembly("MCAuditPro.Repositories");
+        //        //    b.CommandTimeout(3);
+        //        //}));
 
-                services.AddDbContext<CosmosDBContext>();
-            }
+        //        services.AddDbContext<CosmosDBContext>();
+        //    }
 
-            services.CreateDatabases();
-        }
+        //    services.CreateDatabases();
+        //}
 
-        public static void CreateDatabases(this IServiceCollection services)
-        {
-            var serviceProvider = services.BuildServiceProvider();
-            using (var scope = serviceProvider.CreateScope())
-            {
-                var dbContext = scope.ServiceProvider.GetRequiredService<CosmosDBContext>();
-                Task.Run(async () => await dbContext.Database.EnsureCreatedAsync()).Wait();
-            }
-        }
+        //public static void CreateDatabases(this IServiceCollection services)
+        //{
+        //    var serviceProvider = services.BuildServiceProvider();
+        //    using (var scope = serviceProvider.CreateScope())
+        //    {
+        //        var dbContext = scope.ServiceProvider.GetRequiredService<CosmosDBContext>();
+        //        Task.Run(async () => await dbContext.Database.EnsureCreatedAsync()).Wait();
+        //    }
+        //}
     }
 }

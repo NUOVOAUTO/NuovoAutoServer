@@ -92,5 +92,5 @@ stages:
             inputs:
               azureSubscription: '$(azureSubscription)'
               appType: functionApp
-              appName: $(adminApifunctionAppName)
+              appName: $(adminApiFunctionAppName)
               package: '$(Pipeline.Workspace)/drop/$(Build.BuildId)-api.zip'

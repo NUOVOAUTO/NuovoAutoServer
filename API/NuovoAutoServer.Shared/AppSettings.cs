@@ -5,6 +5,7 @@
     {
         public ConnectionStrings ConnectionStrings { get; set; }
         public ApiProvider VehicleDatabasesApiProvider { get; set; }
+        public ApiProvider VehicleDatabasesReportApiProvider { get; set; }
         public bool LogDbDiagnosticts { get; set; }
         public int CacheExpirationTimeInHours { get; set; }
         public RateLimiting RateLimiting { get; set; }

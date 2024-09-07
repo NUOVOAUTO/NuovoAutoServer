@@ -87,10 +87,12 @@ stages:
         deploy:
 
           steps:
-          - task: AzureFunctionApp@1
+          - task: AzureFunctionApp@2
             displayName: 'Azure functions app deploy'
             inputs:
-              azureSubscription: '$(azureSubscription)'
-              appType: functionApp
-              appName: $(adminApiFunctionAppName)
+              connectedServiceNameARM: '$(azureSubscription)'
+              appType: 'functionAppLinux'
+              appName:  $(adminApiFunctionAppName)
               package: '$(Pipeline.Workspace)/drop/$(Build.BuildId)-api.zip'
+              runtimeStack: 'DOTNET-ISOLATED|8.0'
+              deploymentMethod: 'auto'

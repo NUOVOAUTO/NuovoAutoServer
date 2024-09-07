@@ -96,3 +96,4 @@ stages:
               package: '$(Pipeline.Workspace)/drop/$(Build.BuildId)-api.zip'
               runtimeStack: 'DOTNET-ISOLATED|8.0'
               deploymentMethod: 'auto'
+              isFlexConsumption: true

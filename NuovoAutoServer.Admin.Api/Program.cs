@@ -32,7 +32,7 @@ var host = new HostBuilder()
         var appSettings = configuration.GetSection("AppSettings");
         services.Configure<AppSettings>(appSettings);
 
-        services.Configure<EmailSettings>(configuration.GetSection("EmailSettings")); // Configure EmailSettings
+        //services.Configure<EmailSettings>(configuration.GetSection("EmailSettings")); // Configure EmailSettings
 
         services.Configure<JsonSerializerOptions>(jsonSerializerOptions =>
         {

@@ -31,19 +31,21 @@ namespace NuovoAutoServer.Admin.Api.Extensions
 
             services.AddTransient<VehicleDetailsServiceSQL>();
             services.AddTransient<VehicleEnquiryServiceSQL>();
+            services.AddTransient<VehicleReportService>();
+
             services.AddTransient<EmailNotificationService>();
             services.AddSingleton<RetryHandler>();
             services.AddSingleton<AzureServiceBusClient>();
             services.AddSingleton<BlobStorageService>();
-            services.AddTransient<IVehicleDetailsApiProvider, VehicleDatabaseApiProvider>();
+            services.AddTransient<IVehicleReportApiProvider, VehicleDatabasesReportApiProvider>();
 
             using (var scope = serviceProvider.CreateScope())
             {
                 var appSettings = scope.ServiceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
-                var authKey = appSettings.VehicleDatabasesApiProvider.AuthKey;
+                var authKey = appSettings.VehicleDatabasesReportApiProvider.AuthKey;
 
                 //TODO: Configure the BaseUrl as part of RegisterApiClient.
-                
+                services.RegisterApiClient<VehicleReport>(new CustomAuthenticationHeaderProvider("x-AuthKey", authKey));
             }
 
             using (var scope = serviceProvider.CreateScope())

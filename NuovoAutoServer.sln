@@ -25,7 +25,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Rest.APIClient", "Rest.APIC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rest.ApiClient", "Rest.APIClient\Rest.ApiClient\Rest.ApiClient.csproj", "{A913F9BD-7941-419F-8486-97DDCE1F5E35}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuovoAutoServer.Admin.Api", "NuovoAutoServer.Admin.Api\NuovoAutoServer.Admin.Api.csproj", "{6DD3F960-A1F6-4B21-A559-459BE09C9C0E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuovoAutoServer.Admin.Api", "NuovoAutoServer.Admin.Api\NuovoAutoServer.Admin.Api.csproj", "{6DD3F960-A1F6-4B21-A559-459BE09C9C0E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -22,10 +22,17 @@ var host = new HostBuilder()
         services.ConfigureFunctionsApplicationInsights();
         services.AddSingleton<TelemetryClient>();
 
+        var env = Environment.GetEnvironmentVariable("ENVIRONMENT");
+        var emailTemplateConfig = "EmailNotification/emailTemplates.json";
+        if(env == "PROD")
+        {
+            emailTemplateConfig = "EmailNotification/emailTemplates.prod.json";
+        }
+
         var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory()) // Set the base path
             .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-            .AddJsonFile("EmailNotification/emailTemplates.json", optional: false, reloadOnChange: true) // Add the correct path to emailTemplates.json
+            .AddJsonFile(emailTemplateConfig, optional: false, reloadOnChange: true) // Add the correct path to emailTemplates.json
             .AddEnvironmentVariables()
             .Build();
 

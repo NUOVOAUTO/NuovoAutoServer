@@ -1,0 +1,16 @@
+{
+  "EmailSettings": {
+    "Sender": "dev.nuovoauto@outlook.com",
+    "Templates": {
+      "VehicleEnquiry": {
+        "Subject": "WeBuyCarZ - Your Vehicle Enquiry for {Year} {Make} {Model} - {VinNumber}",
+        "Body": "%EmailNotification\\Templates\\customerAcknowledgementTemplate.html%",
+        "Recipients": {
+          "To": [],
+          "CC": ["hari.krish7.us@gmail.com"],
+          "BCC": [ "info@webuycarz.com" ]
+        }
+      }
+    }
+  }
+}

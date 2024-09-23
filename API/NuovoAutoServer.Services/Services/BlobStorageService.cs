@@ -30,6 +30,13 @@ namespace NuovoAutoServer.Services.Services
             _blobServiceClient = blobServiceClient;
         }
 
+        public async Task<bool> BlobExists(string blobContainer, string blobPath)
+        {
+            BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(blobContainer);
+            BlobClient blobClient = containerClient.GetBlobClient(blobPath);
+            return await blobClient.ExistsAsync();
+        }
+
         public static async Task<string> GetBlobContentAsString(Uri blobUri)
         {
             BlobClient blobClient = GetBlobClient(blobUri);

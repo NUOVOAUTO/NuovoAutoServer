@@ -66,7 +66,6 @@ namespace NuovoAutoServer.Admin.Api
                 var response = req.CreateResponse(HttpStatusCode.BadRequest);
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
                 apiResponseModel.ErrorMessage = ex.Message;
-                apiResponseModel.IsSuccess = true;
                 await response.WriteStringAsync(apiResponseModel.ToJsonString());
                 return response;
             }

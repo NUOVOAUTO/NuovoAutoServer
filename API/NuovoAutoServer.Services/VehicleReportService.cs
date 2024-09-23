@@ -22,6 +22,8 @@ namespace NuovoAutoServer.Services
         private readonly RetryHandler _retryHandler;
         private readonly BlobStorageService _blobStorageService;
 
+        private static readonly string _vinReportContainer = "vin-reports";
+
         public VehicleReportService(IVehicleReportApiProvider vehicleReportApiProvider, TelemetryClient telemetryClient, ILoggerFactory loggerFactory, IOptions<AppSettings> appSettings, RetryHandler retryHandler, BlobStorageService blobStorageService)
         {
             _vehicleReportApiProvider = vehicleReportApiProvider;
@@ -30,9 +32,19 @@ namespace NuovoAutoServer.Services
             _blobStorageService = blobStorageService;
         }
 
+        public async Task<bool> VinReportExists(string vin)
+        {
+            var blobContainer = _vinReportContainer;
+            var blobPath = $"{vin}.pdf";
+
+            _logger.LogInformation($"Checking if vehicle report exists for VIN: {vin}");
+
+            return await _blobStorageService.BlobExists(blobContainer, blobPath);
+        }
+
         public async Task<VehicleReport?> GetVinReport(string vin)
         {
-            var blobContainer = "vin-reports";
+            var blobContainer = _vinReportContainer;
             var blobPath = $"{vin}.pdf";
 
             _logger.LogInformation($"Getting vehicle report for VIN: {vin}");

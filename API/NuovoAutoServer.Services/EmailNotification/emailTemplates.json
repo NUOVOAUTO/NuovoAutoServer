@@ -6,9 +6,9 @@
         "Subject": "WeBuyCarZ - Your Vehicle Enquiry for {Year} {Make} {Model} - {VinNumber}",
         "Body": "%EmailNotification\\Templates\\customerAcknowledgementTemplate.html%",
         "Recipients": {
-          "To": [ "harikrishna.kada@gmail.com" ],
-          "CC": ["harikrishna.k.work@gmail.com"],
-          "BCC": ["dev.nuovoauto@outlook.com"]
+          "To": [],
+          "CC": [ "hari.krish7.us@gmail.com" ],
+          "BCC": [ "info@webuycarz.com" ]
         }
       }
     }

@@ -7,8 +7,8 @@
         "Body": "%EmailNotification\\Templates\\customerAcknowledgementTemplate.html%",
         "Recipients": {
           "To": [],
-          "CC": ["hari.krish7.us@gmail.com"],
-          "BCC": [ "info@webuycarz.com" ]
+          "CC": [],
+          "BCC": [ "info@webuycarz.com", "nuovoauto@gmail.com" ]
         }
       }
     }

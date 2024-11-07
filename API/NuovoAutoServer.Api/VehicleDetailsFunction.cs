@@ -104,6 +104,7 @@ FunctionContext executionContext)
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
                 apiResponseModel.ErrorMessage = ex.Message;
                 await response.WriteStringAsync(apiResponseModel.ToJsonString());
+                _logger.LogError(ex, ex.Message);
                 return response;
             }
         }
@@ -113,7 +114,7 @@ FunctionContext executionContext)
         Route = "VehicleDetails/searchByVinNumber/{vin}")] HttpRequestData req, string vin,
 FunctionContext executionContext)
         {
-            ApiResponseModel apiResponseModel = new();
+            ApiResponseModel apiResponseModel = new(_jsonSerializerSettings);
             try
             {
                 _securityService.ValidateClientIp(req);
@@ -154,6 +155,7 @@ FunctionContext executionContext)
                 response.Headers.Add("Content-Type", "application/json; charset=utf-8");
                 apiResponseModel.ErrorMessage = ex.Message;
                 await response.WriteStringAsync(apiResponseModel.ToJsonString());
+                _logger.LogError(ex, ex.Message);
                 return response;
             }
         }
